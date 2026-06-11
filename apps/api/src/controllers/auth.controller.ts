@@ -46,7 +46,7 @@ export async function refresh(req: Request, res: Response): Promise<void> {
     if (!user || !user.refreshTokens.includes(token)) { res.status(401).json({ error: 'Invalid refresh token' }); return }
 
     // Rotate
-    user.refreshTokens = user.refreshTokens.filter((t) => t !== token)
+    user.refreshTokens = user.refreshTokens.filter((t: string) => t !== token)
     const { accessToken, refreshToken: newRefresh } = generateTokens({ id: user._id.toString(), email: user.email, role: user.role })
     user.refreshTokens.push(newRefresh)
     await user.save()
@@ -66,7 +66,7 @@ export async function logout(req: Request, res: Response): Promise<void> {
       if (payload?.id) {
         const user = await User.findById(payload.id)
         if (user) {
-          user.refreshTokens = user.refreshTokens.filter((t) => t !== token)
+          user.refreshTokens = user.refreshTokens.filter((t: string) => t !== token)
           await user.save()
         }
       }
