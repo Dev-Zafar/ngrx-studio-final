@@ -1,0 +1,130 @@
+@import url('https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-void: #080810;
+  --color-surface: #0F0F1A;
+  --color-border: #1A1A2E;
+  --color-accent-1: #7C3AED;
+  --color-accent-2: #06B6D4;
+  --color-accent-3: #A855F7;
+  --color-glow: rgba(124, 58, 237, 0.15);
+  --color-text-1: #F8F8FF;
+  --color-text-2: #A0A0B8;
+  --color-text-3: #60607A;
+
+  --text-xs: clamp(0.75rem, 1vw, 0.875rem);
+  --text-sm: clamp(0.875rem, 1.2vw, 1rem);
+  --text-base: clamp(1rem, 1.5vw, 1.125rem);
+  --text-lg: clamp(1.125rem, 2vw, 1.375rem);
+  --text-xl: clamp(1.5rem, 3vw, 2rem);
+  --text-2xl: clamp(2rem, 4vw, 3rem);
+  --text-hero: clamp(3rem, 7vw, 6.5rem);
+}
+
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+}
+
+html {
+  scroll-behavior: auto; /* Lenis handles smooth scroll */
+}
+
+body {
+  background-color: var(--color-void);
+  color: var(--color-text-1);
+  font-family: 'Inter', sans-serif;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 4px;
+}
+::-webkit-scrollbar-track {
+  background: var(--color-void);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-accent-1);
+  border-radius: 2px;
+}
+
+/* Selection */
+::selection {
+  background: rgba(124, 58, 237, 0.3);
+  color: var(--color-text-1);
+}
+
+/* Utility classes */
+@layer utilities {
+  .text-gradient {
+    background: linear-gradient(135deg, #7C3AED 0%, #06B6D4 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .glow-accent {
+    box-shadow: 0 0 30px rgba(124, 58, 237, 0.3), 0 0 60px rgba(124, 58, 237, 0.1);
+  }
+
+  .glow-cyan {
+    box-shadow: 0 0 30px rgba(6, 182, 212, 0.3), 0 0 60px rgba(6, 182, 212, 0.1);
+  }
+
+  .glass {
+    background: rgba(15, 15, 26, 0.6);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+  }
+
+  .noise {
+    position: relative;
+  }
+
+  .noise::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+    opacity: 0.03;
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  .section-padding {
+    padding-top: clamp(80px, 12vw, 140px);
+    padding-bottom: clamp(80px, 12vw, 140px);
+  }
+
+  .container-custom {
+    max-width: 1440px;
+    margin: 0 auto;
+    padding-left: clamp(16px, 5vw, 96px);
+    padding-right: clamp(16px, 5vw, 96px);
+  }
+}
+
+/* Cursor styles */
+.cursor-none {
+  cursor: none;
+}
+
+@media (pointer: coarse) {
+  .cursor-none {
+    cursor: auto;
+  }
+}
+
+/* Hide scrollbar during loading */
+body.loading {
+  overflow: hidden;
+}
