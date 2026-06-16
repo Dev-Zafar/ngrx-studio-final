@@ -72,7 +72,7 @@ export function ContactSection() {
 
   const whatsapp = siteSettings?.whatsapp || '+923428283671'
   const email = siteSettings?.email || 'zafarjahangeer512@gmail.com'
-  const activeSocials = SOCIAL_CONFIG.filter(s => siteSettings && (siteSettings as Record<string,string>)[s.key])
+  const activeSocials = SOCIAL_CONFIG.filter(s => siteSettings && siteSettings[s.key as keyof typeof siteSettings])
 
   const inp = 'w-full px-4 py-3 rounded-xl border font-space text-sm outline-none transition-colors'
   const inpStyle = { borderColor: 'var(--color-border)', background: 'var(--color-input-bg)', color: 'var(--color-text-1)' }
@@ -224,7 +224,7 @@ export function ContactSection() {
                   <div className="grid grid-cols-2 gap-2">
                     {activeSocials.map(s => (
                       <a key={s.key}
-                        href={(siteSettings as Record<string,string>)[s.key]}
+                        href={(siteSettings as unknown as Record<string,string>)[s.key]}
                         target="_blank" rel="noopener noreferrer"
                         className="flex items-center gap-3 p-3 rounded-xl border transition-all duration-200"
                         style={{ borderColor: 'var(--color-border)', background: 'var(--color-surface)' }}
