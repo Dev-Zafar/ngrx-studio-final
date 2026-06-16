@@ -35,7 +35,6 @@ export function Footer() {
     fetch(`${api}/settings`).then(r => r.json()).then(setSettings).catch(() => {})
   }, [])
 
-
   const activeSocials = SOCIALS.filter(s => settings && settings[s.key as keyof typeof settings])
 
   return (
