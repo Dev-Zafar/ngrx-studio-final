@@ -35,7 +35,8 @@ export function Footer() {
     fetch(`${api}/settings`).then(r => r.json()).then(setSettings).catch(() => {})
   }, [])
 
-  const activeSocials = SOCIALS.filter(s => settings && (settings as Record<string,string>)[s.key])
+
+  const activeSocials = SOCIALS.filter(s => settings && settings[s.key as keyof typeof settings])
 
   return (
     <footer className="border-t" style={{ borderColor: 'var(--color-border)', background: 'var(--color-void)' }}>
@@ -55,7 +56,7 @@ export function Footer() {
               <div className="flex gap-3 mt-6">
                 {activeSocials.map(s => (
                   <a key={s.key}
-                    href={(settings as Record<string,string>)[s.key]}
+                    href={settings?.[s.key as keyof typeof settings]}
                     target="_blank" rel="noopener noreferrer"
                     className="w-9 h-9 rounded-lg border flex items-center justify-center text-sm transition-all duration-200"
                     style={{ borderColor: 'var(--color-border)', background: 'var(--color-surface)' }}
