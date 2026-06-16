@@ -11,31 +11,29 @@ const app = express()
 const PORT = process.env.PORT || 4000
 
 // ─── Security ─────────────────────────────────────────────
-app.use(helmet())
+app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }))
 app.use(cors({
   origin: process.env.CLIENT_URL || 'http://localhost:3000',
   credentials: true,
+  methods: ['GET','POST','PUT','PATCH','DELETE','OPTIONS'],
+  allowedHeaders: ['Content-Type','Authorization'],
 }))
 
 // ─── Rate limiting ────────────────────────────────────────
-const generalLimit = rateLimit({ windowMs: 15 * 60 * 1000, max: 100 })
-const contactLimit = rateLimit({ windowMs: 60 * 1000, max: 5, message: { error: 'Too many requests, slow down.' } })
-const authLimit = rateLimit({ windowMs: 60 * 1000, max: 10 })
+app.use('/api/contact', rateLimit({ windowMs: 60_000, max: 5, standardHeaders: true, legacyHeaders: false }))
+app.use('/api/auth/login', rateLimit({ windowMs: 60_000, max: 10, standardHeaders: true, legacyHeaders: false }))
+app.use(rateLimit({ windowMs: 15 * 60_000, max: 200 }))
 
-app.use('/api/contact', contactLimit)
-app.use('/api/auth', authLimit)
-app.use(generalLimit)
-
-// ─── Body parsing ─────────────────────────────────────────
+// ─── Parsers ──────────────────────────────────────────────
 app.use(express.json({ limit: '10mb' }))
-app.use(express.urlencoded({ extended: true }))
+app.use(express.urlencoded({ extended: true, limit: '10mb' }))
 app.use(cookieParser())
 
 // ─── Routes ───────────────────────────────────────────────
 app.use('/api', routes)
 
 // ─── 404 ──────────────────────────────────────────────────
-app.use((_, res) => res.status(404).json({ error: 'Route not found' }))
+app.use((_req, res) => res.status(404).json({ error: 'Not found' }))
 
 // ─── Error handler ────────────────────────────────────────
 app.use((err: Error, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
@@ -45,7 +43,5 @@ app.use((err: Error, _req: express.Request, res: express.Response, _next: expres
 
 // ─── Start ────────────────────────────────────────────────
 connectDB().then(() => {
-  app.listen(PORT, () => {
-    console.log(`🚀 API running on http://localhost:${PORT}`)
-  })
+  app.listen(PORT, () => console.log(`🚀 API running → http://localhost:${PORT}`))
 })

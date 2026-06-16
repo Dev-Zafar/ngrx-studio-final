@@ -9,24 +9,15 @@ export function PageLoader() {
 
   useEffect(() => {
     setMounted(true)
-    // Skip loader if already seen in this session
-    const seen = sessionStorage.getItem('ngrx-loaded')
-    if (seen) {
-      setLoading(false)
-      return
-    }
+    if (sessionStorage.getItem('ngrx-loaded')) { setLoading(false); return }
 
-    let start = 0
     const duration = 2000
     const startTime = performance.now()
 
-    const animate = (currentTime: number) => {
-      const elapsed = currentTime - startTime
-      const progress = Math.min(elapsed / duration, 1)
+    const animate = (now: number) => {
+      const progress = Math.min((now - startTime) / duration, 1)
       const eased = 1 - Math.pow(1 - progress, 3)
-      start = Math.round(eased * 100)
-      setCount(start)
-
+      setCount(Math.round(eased * 100))
       if (progress < 1) {
         requestAnimationFrame(animate)
       } else {
@@ -48,7 +39,8 @@ export function PageLoader() {
     <AnimatePresence>
       {loading && (
         <motion.div
-          className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-void"
+          className="fixed inset-0 z-[9999] flex flex-col items-center justify-center"
+          style={{ background: 'var(--color-void)' }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.6, ease: [0.76, 0, 0.24, 1] }}
         >
@@ -59,42 +51,49 @@ export function PageLoader() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
           >
-            {/* NGRX SVG Logo */}
-            <svg width="180" height="60" viewBox="0 0 180 60" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <text x="0" y="48" fontFamily="'Sora', sans-serif" fontWeight="800" fontSize="52" fill="#F8F8FF" letterSpacing="-2">NGR</text>
-              <text x="126" y="48" fontFamily="'Sora', sans-serif" fontWeight="800" fontSize="52" fill="url(#xGrad)" letterSpacing="-2">X</text>
+            <svg width="180" height="56" viewBox="0 0 180 56" fill="none">
+              <text x="0" y="48" fontFamily="'Sora',sans-serif" fontWeight="800" fontSize="52" fill="var(--color-text-1)" letterSpacing="-2">NGR</text>
+              <text x="124" y="48" fontFamily="'Sora',sans-serif" fontWeight="800" fontSize="52" fill="url(#loaderXGrad)" letterSpacing="-2">X</text>
               <defs>
-                <linearGradient id="xGrad" x1="126" y1="0" x2="170" y2="60" gradientUnits="userSpaceOnUse">
-                  <stop stopColor="#7C3AED"/>
-                  <stop offset="1" stopColor="#A855F7"/>
+                <linearGradient id="loaderXGrad" x1="124" y1="0" x2="180" y2="56" gradientUnits="userSpaceOnUse">
+                  <stop stopColor="#7C3AED"/><stop offset="1" stopColor="#A855F7"/>
                 </linearGradient>
               </defs>
             </svg>
-            <div className="mt-1 text-text-3 font-mono text-xs tracking-[0.4em] uppercase">Studio</div>
+            <div className="mt-2 font-mono text-xs tracking-[0.4em] uppercase" style={{ color: 'var(--color-text-3)' }}>Studio</div>
           </motion.div>
 
           {/* Counter */}
           <motion.div
-            className="font-sora text-7xl font-800 text-text-3 tabular-nums"
+            className="font-sora font-extrabold tabular-nums"
+            style={{ fontSize: 'clamp(3rem,8vw,5rem)' }}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.4 }}
           >
-            <span className="text-gradient font-sora font-extrabold">{count}</span>
-            <span className="text-text-3 text-4xl">%</span>
+            <span style={{
+              background: 'linear-gradient(135deg, var(--color-accent-1), var(--color-accent-2))',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+            }}>{count}</span>
+            <span className="text-4xl" style={{ color: 'var(--color-text-3)' }}>%</span>
           </motion.div>
 
           {/* Progress bar */}
-          <div className="mt-8 w-48 h-[1px] bg-border overflow-hidden">
+          <div className="mt-8 w-48 h-px overflow-hidden" style={{ background: 'var(--color-border)' }}>
             <motion.div
-              className="h-full bg-gradient-to-r from-accent-1 to-accent-2"
-              style={{ width: `${count}%` }}
+              className="h-full"
+              style={{
+                width: `${count}%`,
+                background: 'linear-gradient(90deg, var(--color-accent-1), var(--color-accent-2))',
+              }}
             />
           </div>
 
           {/* Tagline */}
           <motion.p
-            className="mt-6 font-mono text-xs text-text-3 tracking-widest uppercase"
+            className="mt-6 font-mono text-xs tracking-widest uppercase"
+            style={{ color: 'var(--color-text-3)' }}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.6 }}

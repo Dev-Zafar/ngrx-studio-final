@@ -1,5 +1,5 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -11,55 +11,55 @@ const schema = z.object({
   email: z.string().email('Please enter a valid email'),
   budget: z.string().min(1, 'Please select a budget'),
   services: z.array(z.string()).min(1, 'Select at least one service'),
-  brief: z.string().min(20, 'Brief must be at least 20 characters').max(500, 'Max 500 characters'),
+  brief: z.string().min(20, 'Brief must be at least 20 characters').max(500),
 })
-
 type FormData = z.infer<typeof schema>
 
-const serviceOptions = ['Video Editing', 'Motion Graphics', 'Graphic Design', 'Social Media Mgmt', 'Content Strategy']
+interface SiteSettings {
+  email: string; whatsapp: string
+  instagram: string; youtube: string; linkedin: string
+  behance: string; tiktok: string; twitter: string
+  availabilityText: string; isAvailable: boolean
+}
+
+const serviceOptions = ['Video Editing (Shorts/Reels)', 'Podcast Clipping', 'YouTube Editing', 'TikTok Content', 'Motion Graphics', 'Graphic Design', 'Social Media Mgmt', 'Content Strategy']
 const budgetOptions = ['Under $500', '$500 – $2,000', '$2,000 – $5,000', '$5,000+']
 
-const socialLinks = [
-  { label: 'Instagram', icon: '📸', href: '#' },
-  { label: 'YouTube', icon: '▶️', href: '#' },
-  { label: 'LinkedIn', icon: '💼', href: '#' },
-  { label: 'Behance', icon: '🎨', href: '#' },
+const SOCIAL_CONFIG = [
+  { key: 'instagram', label: 'Instagram', icon: '📸' },
+  { key: 'youtube', label: 'YouTube', icon: '▶️' },
+  { key: 'tiktok', label: 'TikTok', icon: '🎵' },
+  { key: 'linkedin', label: 'LinkedIn', icon: '💼' },
+  { key: 'behance', label: 'Behance', icon: '🎨' },
+  { key: 'twitter', label: 'X / Twitter', icon: '𝕏' },
 ]
 
 export function ContactSection() {
-  const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle')
+  const [status, setStatus] = useState<'idle'|'loading'|'success'|'error'>('idle')
+  const [siteSettings, setSiteSettings] = useState<SiteSettings | null>(null)
 
-  const {
-    register,
-    handleSubmit,
-    watch,
-    setValue,
-    reset,
-    formState: { errors },
-  } = useForm<FormData>({
+  useEffect(() => {
+    const api = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api'
+    fetch(`${api}/settings`).then(r => r.json()).then(setSiteSettings).catch(() => {})
+  }, [])
+
+  const { register, handleSubmit, watch, setValue, reset, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(schema),
     defaultValues: { services: [] },
   })
 
   const selectedServices = watch('services') || []
-
-  const toggleService = (service: string) => {
-    const current = selectedServices
-    if (current.includes(service)) {
-      setValue('services', current.filter((s) => s !== service))
-    } else {
-      setValue('services', [...current, service])
-    }
+  const toggleService = (s: string) => {
+    setValue('services', selectedServices.includes(s)
+      ? selectedServices.filter(x => x !== s)
+      : [...selectedServices, s])
   }
 
   const onSubmit = async (data: FormData) => {
     setStatus('loading')
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api'}/contact`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-      })
+      const api = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api'
+      const res = await fetch(`${api}/contact`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) })
       if (!res.ok) throw new Error('Failed')
       setStatus('success')
       reset()
@@ -70,81 +70,62 @@ export function ContactSection() {
     }
   }
 
+  const whatsapp = siteSettings?.whatsapp || '+923428283671'
+  const email = siteSettings?.email || 'zafarjahangeer512@gmail.com'
+  const activeSocials = SOCIAL_CONFIG.filter(s => siteSettings && (siteSettings as Record<string,string>)[s.key])
+
+  const inp = 'w-full px-4 py-3 rounded-xl border font-space text-sm outline-none transition-colors'
+  const inpStyle = { borderColor: 'var(--color-border)', background: 'var(--color-input-bg)', color: 'var(--color-text-1)' }
+
   return (
-    <section id="contact" className="section-padding bg-void">
+    <section id="contact" className="section-padding" style={{ background: 'var(--color-void)' }}>
       <div className="container-custom">
         <div className="grid lg:grid-cols-2 gap-16 items-start">
           {/* Left — Form */}
           <div>
             <FadeIn>
-              <span className="font-mono text-xs text-accent-2 tracking-[0.3em] uppercase">Contact</span>
+              <span className="font-mono text-xs tracking-[0.3em] uppercase" style={{ color: 'var(--color-accent-2)' }}>Contact</span>
             </FadeIn>
-            <RevealText
-              as="h2"
-              className="font-sora font-extrabold text-text-1 mt-4 mb-3 leading-tight"
-              style={{ fontSize: 'clamp(2rem, 4vw, 3rem)' } as React.CSSProperties}
-            >
+            <RevealText as="h2" className="font-sora font-extrabold mt-4 mb-3 leading-tight" style={{ fontSize: 'clamp(2rem, 4vw, 3rem)', color: 'var(--color-text-1)' }}>
               Let's build something great.
             </RevealText>
             <FadeIn delay={0.2}>
-              <p className="text-text-2 mb-10">Fill in the brief below and I'll get back to you within 24 hours.</p>
+              <p className="mb-10" style={{ color: 'var(--color-text-2)' }}>Fill in the brief below and I'll reply within 24 hours.</p>
             </FadeIn>
 
             <FadeIn delay={0.3}>
               <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-                {/* Name + Email */}
                 <div className="grid sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block font-mono text-xs text-text-3 tracking-widest uppercase mb-2">Name</label>
-                    <input
-                      {...register('name')}
-                      placeholder="Your name"
-                      className="w-full px-4 py-3 rounded-xl border border-border bg-surface/60 text-text-1 placeholder-text-3 font-space text-sm focus:outline-none focus:border-accent-1/60 transition-colors"
-                    />
-                    {errors.name && <p className="text-red-400 text-xs mt-1">{errors.name.message}</p>}
-                  </div>
-                  <div>
-                    <label className="block font-mono text-xs text-text-3 tracking-widest uppercase mb-2">Email</label>
-                    <input
-                      {...register('email')}
-                      type="email"
-                      placeholder="your@email.com"
-                      className="w-full px-4 py-3 rounded-xl border border-border bg-surface/60 text-text-1 placeholder-text-3 font-space text-sm focus:outline-none focus:border-accent-1/60 transition-colors"
-                    />
-                    {errors.email && <p className="text-red-400 text-xs mt-1">{errors.email.message}</p>}
-                  </div>
+                  {(['name','email'] as const).map(field => (
+                    <div key={field}>
+                      <label className="block font-mono text-xs tracking-widest uppercase mb-2" style={{ color: 'var(--color-text-3)' }}>
+                        {field === 'name' ? 'Name' : 'Email'}
+                      </label>
+                      <input {...register(field)} placeholder={field === 'name' ? 'Your name' : 'your@email.com'} type={field === 'email' ? 'email' : 'text'}
+                        className={inp} style={inpStyle} />
+                      {errors[field] && <p className="text-red-400 text-xs mt-1">{errors[field]?.message}</p>}
+                    </div>
+                  ))}
                 </div>
 
-                {/* Budget */}
                 <div>
-                  <label className="block font-mono text-xs text-text-3 tracking-widest uppercase mb-2">Budget Range</label>
-                  <select
-                    {...register('budget')}
-                    className="w-full px-4 py-3 rounded-xl border border-border bg-surface/60 text-text-1 font-space text-sm focus:outline-none focus:border-accent-1/60 transition-colors appearance-none"
-                  >
-                    <option value="" className="bg-surface">Select budget...</option>
-                    {budgetOptions.map((b) => (
-                      <option key={b} value={b} className="bg-surface">{b}</option>
-                    ))}
+                  <label className="block font-mono text-xs tracking-widest uppercase mb-2" style={{ color: 'var(--color-text-3)' }}>Budget Range</label>
+                  <select {...register('budget')} className={inp} style={{ ...inpStyle, appearance: 'none' }}>
+                    <option value="">Select budget...</option>
+                    {budgetOptions.map(b => <option key={b} value={b}>{b}</option>)}
                   </select>
                   {errors.budget && <p className="text-red-400 text-xs mt-1">{errors.budget.message}</p>}
                 </div>
 
-                {/* Services */}
                 <div>
-                  <label className="block font-mono text-xs text-text-3 tracking-widest uppercase mb-3">Services Needed</label>
+                  <label className="block font-mono text-xs tracking-widest uppercase mb-3" style={{ color: 'var(--color-text-3)' }}>Services Needed</label>
                   <div className="flex flex-wrap gap-2">
-                    {serviceOptions.map((s) => (
-                      <button
-                        key={s}
-                        type="button"
-                        onClick={() => toggleService(s)}
-                        className={`px-4 py-2 rounded-lg border text-sm font-space transition-all duration-200 ${
-                          selectedServices.includes(s)
-                            ? 'border-accent-1 bg-accent-1/15 text-accent-1'
-                            : 'border-border bg-surface/40 text-text-2 hover:border-accent-1/40'
-                        }`}
-                      >
+                    {serviceOptions.map(s => (
+                      <button key={s} type="button" onClick={() => toggleService(s)}
+                        className="px-3 py-2 rounded-lg border text-sm font-space transition-all duration-200"
+                        style={selectedServices.includes(s)
+                          ? { borderColor: 'var(--color-accent-1)', background: 'rgba(124,58,237,0.12)', color: 'var(--color-accent-1)' }
+                          : { borderColor: 'var(--color-border)', background: 'transparent', color: 'var(--color-text-2)' }}>
                         {s}
                       </button>
                     ))}
@@ -152,34 +133,20 @@ export function ContactSection() {
                   {errors.services && <p className="text-red-400 text-xs mt-1">{errors.services.message}</p>}
                 </div>
 
-                {/* Brief */}
                 <div>
-                  <label className="block font-mono text-xs text-text-3 tracking-widest uppercase mb-2">
-                    Project Brief
-                  </label>
-                  <textarea
-                    {...register('brief')}
-                    rows={4}
-                    placeholder="Tell me about your project, goals, and timeline..."
-                    className="w-full px-4 py-3 rounded-xl border border-border bg-surface/60 text-text-1 placeholder-text-3 font-space text-sm focus:outline-none focus:border-accent-1/60 transition-colors resize-none"
-                  />
+                  <label className="block font-mono text-xs tracking-widest uppercase mb-2" style={{ color: 'var(--color-text-3)' }}>Project Brief</label>
+                  <textarea {...register('brief')} rows={4}
+                    placeholder="Tell me about your content — platform, style, audience, and what results you want..." 
+                    className={`${inp} resize-none`} style={inpStyle} />
                   <div className="flex justify-between mt-1">
-                    {errors.brief
-                      ? <p className="text-red-400 text-xs">{errors.brief.message}</p>
-                      : <span />
-                    }
-                    <span className="text-text-3 text-xs font-mono">
-                      {watch('brief')?.length || 0}/500
-                    </span>
+                    {errors.brief ? <p className="text-red-400 text-xs">{errors.brief.message}</p> : <span />}
+                    <span className="text-xs font-mono" style={{ color: 'var(--color-text-3)' }}>{watch('brief')?.length || 0}/500</span>
                   </div>
                 </div>
 
-                {/* Submit */}
-                <button
-                  type="submit"
-                  disabled={status === 'loading'}
-                  className="w-full py-4 rounded-xl bg-gradient-to-r from-accent-1 to-accent-3 text-white font-space font-semibold text-base hover:shadow-lg hover:shadow-accent-1/30 transition-all duration-300 disabled:opacity-60"
-                >
+                <button type="submit" disabled={status === 'loading'}
+                  className="w-full py-4 rounded-xl text-white font-space font-semibold text-base disabled:opacity-60 transition-all hover:opacity-90"
+                  style={{ background: 'linear-gradient(135deg, var(--color-accent-1), var(--color-accent-3))' }}>
                   {status === 'loading' ? (
                     <span className="flex items-center justify-center gap-2">
                       <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none">
@@ -191,26 +158,17 @@ export function ContactSection() {
                   ) : 'Send Brief →'}
                 </button>
 
-                {/* Status messages */}
                 <AnimatePresence>
                   {status === 'success' && (
-                    <motion.div
-                      initial={{ opacity: 0, y: 8 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0 }}
-                      className="p-4 rounded-xl border border-green-500/30 bg-green-500/10 text-green-400 text-sm font-space text-center"
-                    >
+                    <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+                      className="p-4 rounded-xl border border-green-500/30 bg-green-500/10 text-green-400 text-sm font-space text-center">
                       ✅ Brief received! I'll be in touch within 24 hours.
                     </motion.div>
                   )}
                   {status === 'error' && (
-                    <motion.div
-                      initial={{ opacity: 0, y: 8 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0 }}
-                      className="p-4 rounded-xl border border-red-500/30 bg-red-500/10 text-red-400 text-sm font-space text-center"
-                    >
-                      ❌ Something went wrong. Please try again or WhatsApp directly.
+                    <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+                      className="p-4 rounded-xl border border-red-500/30 bg-red-500/10 text-red-400 text-sm font-space text-center">
+                      ❌ Something went wrong. Please WhatsApp directly.
                     </motion.div>
                   )}
                 </AnimatePresence>
@@ -220,54 +178,65 @@ export function ContactSection() {
 
           {/* Right — Info */}
           <FadeIn delay={0.2} className="lg:pt-20">
-            <div className="space-y-6">
+            <div className="space-y-5">
               {/* Contact cards */}
-              {[
-                { label: 'Email', val: 'hello@ngrxstudio.com', icon: '✉️', href: 'mailto:hello@ngrxstudio.com' },
-                { label: 'WhatsApp', val: '+92 300 1234567', icon: '💬', href: 'https://wa.me/923001234567' },
-              ].map((item) => (
-                <a
-                  key={item.label}
-                  href={item.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-4 p-5 rounded-2xl border border-border bg-surface/40 hover:border-accent-1/30 transition-all duration-300 group"
-                >
-                  <div className="w-11 h-11 rounded-xl border border-border flex items-center justify-center text-xl">
-                    {item.icon}
-                  </div>
-                  <div>
-                    <div className="font-mono text-xs text-text-3 tracking-wider uppercase">{item.label}</div>
-                    <div className="font-space text-text-1 group-hover:text-accent-2 transition-colors">{item.val}</div>
-                  </div>
-                </a>
-              ))}
+              <a href={`mailto:${email}`}
+                className="flex items-center gap-4 p-5 rounded-2xl border transition-all duration-300 group"
+                style={{ borderColor: 'var(--color-border)', background: 'var(--color-surface)' }}
+                onMouseEnter={e => (e.currentTarget as HTMLAnchorElement).style.borderColor = 'rgba(124,58,237,0.3)'}
+                onMouseLeave={e => (e.currentTarget as HTMLAnchorElement).style.borderColor = 'var(--color-border)'}>
+                <div className="w-11 h-11 rounded-xl border flex items-center justify-center text-xl" style={{ borderColor: 'var(--color-border)' }}>✉️</div>
+                <div>
+                  <div className="font-mono text-xs tracking-wider uppercase" style={{ color: 'var(--color-text-3)' }}>Email</div>
+                  <div className="font-space" style={{ color: 'var(--color-text-1)' }}>{email}</div>
+                </div>
+              </a>
 
-              {/* Availability badge */}
-              <div className="p-5 rounded-2xl border border-green-500/20 bg-green-500/5">
+              <a href={`https://wa.me/${whatsapp.replace(/[^0-9]/g,'')}`} target="_blank" rel="noopener noreferrer"
+                className="flex items-center gap-4 p-5 rounded-2xl border transition-all duration-300"
+                style={{ borderColor: 'var(--color-border)', background: 'var(--color-surface)' }}
+                onMouseEnter={e => (e.currentTarget as HTMLAnchorElement).style.borderColor = 'rgba(34,197,94,0.3)'}
+                onMouseLeave={e => (e.currentTarget as HTMLAnchorElement).style.borderColor = 'var(--color-border)'}>
+                <div className="w-11 h-11 rounded-xl border flex items-center justify-center text-xl" style={{ borderColor: 'var(--color-border)' }}>💬</div>
+                <div>
+                  <div className="font-mono text-xs tracking-wider uppercase" style={{ color: 'var(--color-text-3)' }}>WhatsApp</div>
+                  <div className="font-space" style={{ color: 'var(--color-text-1)' }}>{whatsapp}</div>
+                </div>
+              </a>
+
+              {/* Availability */}
+              <div className="p-5 rounded-2xl border" style={{ borderColor: 'rgba(34,197,94,0.2)', background: 'rgba(34,197,94,0.05)' }}>
                 <div className="flex items-center gap-2 mb-1">
                   <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
-                  <span className="font-mono text-xs text-green-400 tracking-wider uppercase">Currently Available</span>
+                  <span className="font-mono text-xs tracking-wider uppercase text-green-400">
+                    {siteSettings?.isAvailable ? 'Available' : 'Unavailable'}
+                  </span>
                 </div>
-                <p className="text-text-2 text-sm">Accepting new projects for Q3 2024. Response time: within 24 hours.</p>
+                <p className="text-sm" style={{ color: 'var(--color-text-2)' }}>
+                  {siteSettings?.availabilityText || 'Currently accepting new projects'}. Response within 24 hours.
+                </p>
               </div>
 
-              {/* Social links */}
-              <div>
-                <p className="font-mono text-xs text-text-3 tracking-widest uppercase mb-4">Follow the work</p>
-                <div className="grid grid-cols-2 gap-3">
-                  {socialLinks.map((s) => (
-                    <a
-                      key={s.label}
-                      href={s.href}
-                      className="flex items-center gap-3 p-3 rounded-xl border border-border bg-surface/40 hover:border-accent-1/30 transition-all duration-200"
-                    >
-                      <span>{s.icon}</span>
-                      <span className="font-space text-sm text-text-2">{s.label}</span>
-                    </a>
-                  ))}
+              {/* Socials — dynamically from DB */}
+              {activeSocials.length > 0 && (
+                <div>
+                  <p className="font-mono text-xs tracking-widest uppercase mb-3" style={{ color: 'var(--color-text-3)' }}>Follow the work</p>
+                  <div className="grid grid-cols-2 gap-2">
+                    {activeSocials.map(s => (
+                      <a key={s.key}
+                        href={(siteSettings as Record<string,string>)[s.key]}
+                        target="_blank" rel="noopener noreferrer"
+                        className="flex items-center gap-3 p-3 rounded-xl border transition-all duration-200"
+                        style={{ borderColor: 'var(--color-border)', background: 'var(--color-surface)' }}
+                        onMouseEnter={e => (e.currentTarget as HTMLAnchorElement).style.borderColor = 'rgba(124,58,237,0.3)'}
+                        onMouseLeave={e => (e.currentTarget as HTMLAnchorElement).style.borderColor = 'var(--color-border)'}>
+                        <span>{s.icon}</span>
+                        <span className="font-space text-sm" style={{ color: 'var(--color-text-2)' }}>{s.label}</span>
+                      </a>
+                    ))}
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           </FadeIn>
         </div>

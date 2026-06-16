@@ -1,139 +1,86 @@
 'use client'
-import { useRef, useCallback } from 'react'
+import React from 'react'
+import { useRef, useCallback, useEffect, useState } from 'react'
 import useEmblaCarousel from 'embla-carousel-react'
 import { FadeIn, RevealText } from '@/components/animations/RevealText'
 
-const testimonials = [
-  {
-    name: 'James Whitfield',
-    role: 'Founder',
-    company: 'NovaCast Media',
-    location: 'Dubai, UAE',
-    quote: 'NGRX Studio completely transformed our brand. The editing quality and attention to detail is in the top 1% of everything I\'ve seen. Subscriber numbers speak for themselves.',
-    rating: 5,
-    initials: 'JW',
-    accent: '#7C3AED',
-  },
-  {
-    name: 'Sarah Chen',
-    role: 'CMO',
-    company: 'ByteStack Technologies',
-    location: 'San Francisco, USA',
-    quote: 'Our SaaS launch content outperformed every internal benchmark we set. The explainer video alone drove 60% of our trial signups in the first quarter.',
-    rating: 5,
-    initials: 'SC',
-    accent: '#06B6D4',
-  },
-  {
-    name: 'Amir Hassan',
-    role: 'Creator',
-    company: 'FitPulse',
-    location: 'London, UK',
-    quote: '2.1 million views in one month speaks for itself. Zafar understood the fitness audience immediately and delivered editing that kept people watching.',
-    rating: 5,
-    initials: 'AH',
-    accent: '#10B981',
-  },
-  {
-    name: 'Emma Clarke',
-    role: 'Creative Director',
-    company: 'Luxe Threads Co.',
-    location: 'New York, USA',
-    quote: 'Best ROI we\'ve ever seen from a creative agency. Our engagement rate nearly doubled within 6 weeks. The content just feels premium and on-brand.',
-    rating: 5,
-    initials: 'EC',
-    accent: '#F43F5E',
-  },
-  {
-    name: 'Ryan Kowalski',
-    role: 'CEO',
-    company: 'ZenFlow',
-    location: 'Toronto, Canada',
-    quote: 'They understood our brand voice on day one. The reels they produced feel meditative yet engaging — a very difficult balance to strike. Rare talent.',
-    rating: 5,
-    initials: 'RK',
-    accent: '#A855F7',
-  },
-  {
-    name: 'Priya Nair',
-    role: 'Head of Content',
-    company: 'EduSpark Academy',
-    location: 'Mumbai, India',
-    quote: 'Click-through rate jumped 45% within the first week of the new thumbnails. The system they built means we can produce consistently without constant briefing.',
-    rating: 5,
-    initials: 'PN',
-    accent: '#F59E0B',
-  },
+interface Testimonial { _id: string; name: string; role: string; company: string; quote: string; rating: number }
+
+const FALLBACK: Testimonial[] = [
+  { _id:'1', name:'James Whitfield', role:'Founder', company:'NovaCast Media', quote:"NGRX Studio completely transformed our brand. The editing quality is top 1%. Subscriber numbers speak for themselves.", rating: 5 },
+  { _id:'2', name:'Sarah Chen', role:'CMO', company:'ByteStack Technologies', quote:"Our launch content outperformed every internal benchmark. The explainer video drove 60% of trial signups in Q1.", rating: 5 },
+  { _id:'3', name:'Amir Hassan', role:'Creator', company:'FitPulse', quote:"2.1 million views in one month. Zafar understood the fitness audience immediately — editing that kept people watching.", rating: 5 },
+  { _id:'4', name:'Emma Clarke', role:'Creative Director', company:'Luxe Threads Co.', quote:"Best ROI we've ever seen. Engagement nearly doubled within 6 weeks. The content genuinely feels premium.", rating: 5 },
+  { _id:'5', name:'Ryan Kowalski', role:'CEO', company:'ZenFlow', quote:"They understood our brand voice on day one. The reels feel meditative yet engaging — a very rare balance.", rating: 5 },
+  { _id:'6', name:'Priya Nair', role:'Head of Content', company:'EduSpark Academy', quote:"CTR jumped 45% in the first week. The thumbnail system they built means we produce consistently every time.", rating: 5 },
 ]
 
-export function TestimonialsSection() {
-  const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true, align: 'start', slidesToScroll: 1 })
+const AVATAR_COLORS = ['#7C3AED','#06B6D4','#A855F7','#F43F5E','#10B981','#F59E0B']
 
+export function TestimonialsSection() {
+  const [testimonials, setTestimonials] = useState<Testimonial[]>([])
+  const [loading, setLoading] = useState(true)
+  const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true, align: 'start', dragFree: true })
   const scrollPrev = useCallback(() => emblaApi?.scrollPrev(), [emblaApi])
   const scrollNext = useCallback(() => emblaApi?.scrollNext(), [emblaApi])
 
+  useEffect(() => {
+    fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api'}/testimonials?published=true`)
+      .then(r => r.json())
+      .then(d => setTestimonials(Array.isArray(d) && d.length > 0 ? d : FALLBACK))
+      .catch(() => setTestimonials(FALLBACK))
+      .finally(() => setLoading(false))
+  }, [])
+
+  const displayed = loading ? FALLBACK : testimonials
+
   return (
-    <section id="testimonials" className="section-padding bg-void overflow-hidden">
+    <section id="testimonials" className="section-padding overflow-hidden" style={{ background: 'var(--color-void)' }}>
       <div className="container-custom">
-        {/* Header */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-14">
           <div>
-            <FadeIn>
-              <span className="font-mono text-xs text-accent-2 tracking-[0.3em] uppercase">Testimonials</span>
-            </FadeIn>
-            <RevealText
-              as="h2"
-              className="font-sora font-extrabold text-text-1 mt-4 leading-tight"
-              style={{ fontSize: 'clamp(2rem, 4vw, 3.5rem)' } as React.CSSProperties}
-            >
+            <FadeIn><span className="font-mono text-xs tracking-[0.3em] uppercase" style={{ color: 'var(--color-accent-2)' }}>Testimonials</span></FadeIn>
+            <RevealText as="h2" className="font-sora font-extrabold mt-4 leading-tight"
+              style={{ fontSize: 'clamp(2rem, 4vw, 3.5rem)', color: 'var(--color-text-1)' }}>
               What clients say.
             </RevealText>
           </div>
-
-          {/* Nav buttons */}
           <FadeIn delay={0.2} className="flex gap-3">
-            <button
-              onClick={scrollPrev}
-              className="w-11 h-11 rounded-full border border-border hover:border-accent-1/50 flex items-center justify-center text-text-2 hover:text-text-1 transition-all duration-300"
-            >
-              ←
-            </button>
-            <button
-              onClick={scrollNext}
-              className="w-11 h-11 rounded-full border border-border hover:border-accent-1/50 flex items-center justify-center text-text-2 hover:text-text-1 transition-all duration-300"
-            >
-              →
-            </button>
+            {[{ fn: scrollPrev, label: '←' }, { fn: scrollNext, label: '→' }].map(({ fn, label }) => (
+              <button key={label} onClick={fn}
+                className="w-11 h-11 rounded-full border flex items-center justify-center transition-all duration-200"
+                style={{ borderColor: 'var(--color-border)', color: 'var(--color-text-2)' }}
+                onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(124,58,237,0.5)'; (e.currentTarget as HTMLButtonElement).style.color = 'var(--color-text-1)' }}
+                onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--color-border)'; (e.currentTarget as HTMLButtonElement).style.color = 'var(--color-text-2)' }}>
+                {label}
+              </button>
+            ))}
           </FadeIn>
         </div>
 
-        {/* Carousel */}
         <div className="overflow-hidden" ref={emblaRef}>
           <div className="flex gap-5">
-            {testimonials.map((t) => (
-              <div key={t.name} className="flex-none w-full md:w-[calc(50%-10px)] lg:w-[calc(33.333%-14px)]">
-                <div className="glass rounded-2xl p-7 h-full border border-border/60 hover:border-accent-1/20 transition-colors duration-300">
+            {displayed.map((t, i) => (
+              <div key={t._id} className="flex-none w-full md:w-[calc(50%-10px)] lg:w-[calc(33.333%-14px)]">
+                <div className="rounded-2xl p-7 h-full border transition-colors duration-300"
+                  style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}>
                   {/* Stars */}
                   <div className="flex gap-1 mb-5">
-                    {[...Array(t.rating)].map((_, i) => (
-                      <span key={i} className="text-yellow-400 text-sm">★</span>
+                    {[...Array(5)].map((_, si) => (
+                      <span key={si} className="text-sm" style={{ color: si < t.rating ? '#fbbf24' : 'var(--color-border)' }}>★</span>
                     ))}
                   </div>
-
                   {/* Quote */}
-                  <p className="text-text-1 text-sm leading-relaxed mb-7 italic">"{t.quote}"</p>
-
+                  <p className="text-sm leading-relaxed mb-7 italic" style={{ color: 'var(--color-text-1)' }}>"{t.quote}"</p>
                   {/* Author */}
                   <div className="flex items-center gap-3">
-                    <div
-                      className="w-10 h-10 rounded-full flex items-center justify-center font-sora font-bold text-sm text-white"
-                      style={{ background: `linear-gradient(135deg, ${t.accent}, ${t.accent}80)` }}
-                    >
-                      {t.initials}
+                    <div className="w-10 h-10 rounded-full flex items-center justify-center font-sora font-bold text-sm text-white flex-shrink-0"
+                      style={{ background: `linear-gradient(135deg, ${AVATAR_COLORS[i % AVATAR_COLORS.length]}, ${AVATAR_COLORS[(i+1) % AVATAR_COLORS.length]}80)` }}>
+                      {t.name[0].toUpperCase()}
                     </div>
                     <div>
-                      <div className="font-space font-semibold text-text-1 text-sm">{t.name}</div>
-                      <div className="font-mono text-xs text-text-3">{t.role} @ {t.company}</div>
+                      <div className="font-space font-semibold text-sm" style={{ color: 'var(--color-text-1)' }}>{t.name}</div>
+                      <div className="font-mono text-xs" style={{ color: 'var(--color-text-3)' }}>{t.role} @ {t.company}</div>
                     </div>
                   </div>
                 </div>

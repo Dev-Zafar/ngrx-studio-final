@@ -4,6 +4,7 @@ import './globals.css'
 import { CustomCursor } from '@/components/animations/CustomCursor'
 import { PageLoader } from '@/components/animations/PageLoader'
 import { SmoothScrollProvider } from '@/components/animations/SmoothScrollProvider'
+import { ThemeProvider } from '@/components/animations/ThemeProvider'
 
 const sora = Sora({ subsets: ['latin'], variable: '--font-sora', weight: ['300','400','500','600','700','800'], display: 'swap' })
 const spaceGrotesk = Space_Grotesk({ subsets: ['latin'], variable: '--font-space-grotesk', weight: ['300','400','500','600','700'], display: 'swap' })
@@ -12,7 +13,7 @@ const jetbrainsMono = JetBrains_Mono({ subsets: ['latin'], variable: '--font-jet
 
 export const metadata: Metadata = {
   title: 'NGRX Studio — Frame Every Second',
-  description: 'NGRX Studio is a premium digital creative agency specializing in video editing, motion graphics, brand identity, and content strategy.',
+  description: 'Premium video editing studio. Shorts, Reels, TikToks & YouTube content that converts attention into growth.',
   openGraph: {
     title: 'NGRX Studio — Frame Every Second',
     description: 'We craft viral content and build powerful digital brands.',
@@ -22,13 +23,18 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
-      <body className={`${sora.variable} ${spaceGrotesk.variable} ${inter.variable} ${jetbrainsMono.variable} bg-void text-text-1 cursor-none`}>
-        <PageLoader />
-        <CustomCursor />
-        <SmoothScrollProvider>
-          {children}
-        </SmoothScrollProvider>
+    <html lang="en" suppressHydrationWarning>
+      <body
+        className={`${sora.variable} ${spaceGrotesk.variable} ${inter.variable} ${jetbrainsMono.variable} cursor-none`}
+        style={{ backgroundColor: 'var(--color-void)', color: 'var(--color-text-1)' }}
+      >
+        <ThemeProvider>
+          <PageLoader />
+          <CustomCursor />
+          <SmoothScrollProvider>
+            {children}
+          </SmoothScrollProvider>
+        </ThemeProvider>
       </body>
     </html>
   )

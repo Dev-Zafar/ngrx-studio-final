@@ -1,7 +1,63 @@
 # NGRX Studio — Complete Setup Guide
 
-> Premium digital agency website for Muhammad Zafar Jahangir  
-> Built with Next.js 14, Express.js, MongoDB, Framer Motion
+> **Muhammad Zafar Jahangir** | Premium Video Editing Agency Website  
+> Next.js 14 · Express.js · MongoDB · Dark/Light Theme · Full CMS
+
+---
+
+## 🔐 Default Login
+
+| Field    | Value                          |
+|----------|-------------------------------|
+| URL      | http://localhost:3000/admin    |
+| Email    | zafarjahangeer512@gmail.com   |
+| Password | NGRXStudio@2024!              |
+
+> Run `npm run seed` in `apps/api` first to create this account.
+
+---
+
+## ⚡ Quick Start (3 steps)
+
+### Step 1 — Configure MongoDB
+
+Open `apps/api/.env` and replace this line:
+```
+MONGODB_URI=mongodb+srv://YOUR_USER:YOUR_PASS@cluster0.xxxxx.mongodb.net/ngrx-studio...
+```
+With your actual MongoDB Atlas connection string.
+
+**Get one free at:** https://www.mongodb.com/atlas  
+Create cluster → Connect → Drivers → Copy string → Replace `<password>`
+
+---
+
+### Step 2 — Install & Seed
+
+```bash
+# Terminal 1 — API
+cd apps/api
+npm install
+npm run seed        # Creates DB data + superadmin account
+npm run dev         # Starts on http://localhost:4000
+```
+
+```bash
+# Terminal 2 — Frontend
+cd apps/web
+npm install
+npm run dev         # Starts on http://localhost:3000
+```
+
+---
+
+### Step 3 — Open
+
+| URL                           | What it is              |
+|-------------------------------|-------------------------|
+| http://localhost:3000         | Main website            |
+| http://localhost:3000/admin   | Admin login             |
+| http://localhost:4000/api/health | API health check     |
 
 ---
 
@@ -10,296 +66,164 @@
 ```
 ngrx-studio/
 ├── apps/
-│   ├── web/          ← Next.js 14 frontend (runs on port 3000)
-│   └── api/          ← Express.js backend (runs on port 4000)
-└── package.json      ← Root workspace scripts
+│   ├── web/                    ← Next.js 14 frontend (port 3000)
+│   │   ├── app/
+│   │   │   ├── page.tsx        ← Home page
+│   │   │   ├── layout.tsx      ← Root layout + providers
+│   │   │   ├── globals.css     ← Dark/light theme tokens
+│   │   │   └── admin/          ← CMS dashboard (protected)
+│   │   │       ├── page.tsx    ← Login
+│   │   │       ├── dashboard/  ← Stats overview
+│   │   │       ├── projects/   ← Full CRUD + video upload
+│   │   │       ├── services/   ← Full CRUD
+│   │   │       ├── testimonials/ ← Full CRUD
+│   │   │       ├── inquiries/  ← Contact form submissions
+│   │   │       ├── admins/     ← Admin user management (superadmin)
+│   │   │       └── settings/   ← Site settings, socials, SEO
+│   │   └── components/
+│   │       ├── sections/       ← All page sections (dynamic)
+│   │       ├── animations/     ← Cursor, loader, theme, scroll
+│   │       ├── layout/         ← Navbar, Footer
+│   │       └── ui/             ← Reusable admin components
+│   │
+│   └── api/                    ← Express.js backend (port 4000)
+│       └── src/
+│           ├── controllers/    ← Auth, Projects, Contact, etc.
+│           ├── models/         ← All MongoDB schemas
+│           ├── routes/         ← All API endpoints
+│           ├── middleware/     ← Auth, upload, permissions
+│           ├── config/         ← DB, Cloudinary
+│           └── seed.ts         ← Database seeder
 ```
 
 ---
 
-## ⚙️ Prerequisites
+## 🗄️ What Gets Seeded
 
-Make sure you have these installed before starting:
-
-| Tool | Version | Check |
-|------|---------|-------|
-| Node.js | 18+ | `node -v` |
-| npm | 9+ | `npm -v` |
-| Git | any | `git --version` |
-
----
-
-## 🚀 STEP-BY-STEP SETUP
-
-### STEP 1 — Download / Clone the project
-
-If you have the zip file, extract it. If using git:
-```bash
-git clone <your-repo-url>
-cd ngrx-studio
-```
+Running `npm run seed` creates:
+- ✅ **Superadmin** account (zafarjahangeer512@gmail.com)
+- ✅ **8 portfolio projects** (video, graphics, social, branding)
+- ✅ **6 testimonials** from realistic clients
+- ✅ **5 services** (Short-form, Podcast, YouTube, Motion, Design)
+- ✅ **Site settings** with your email & WhatsApp
 
 ---
 
-### STEP 2 — Set up the Backend (API)
+## ⚙️ Environment Variables
 
-#### 2a. Install backend dependencies
-```bash
-cd apps/api
-npm install
-```
-
-#### 2b. Create backend environment file
-```bash
-# Copy the example file
-cp .env.example .env
-```
-
-Now open `apps/api/.env` in any text editor and fill in:
-
-**Required fields:**
-```
+### `apps/api/.env`
+```env
 PORT=4000
 NODE_ENV=development
-MONGODB_URI=<your MongoDB connection string>
-JWT_SECRET=anyrandomlongstring123abc
-JWT_REFRESH_SECRET=anotherlongstring456def
+MONGODB_URI=           ← Your MongoDB Atlas URI (REQUIRED)
+JWT_SECRET=            ← Any long random string
+JWT_REFRESH_SECRET=    ← Any different long random string
 CLIENT_URL=http://localhost:3000
-ADMIN_SECRET=mysecretadminkey
+
+# Email notifications (optional)
+EMAIL_USER=zafarjahangeer512@gmail.com
+EMAIL_PASS=            ← Gmail App Password (not your login password)
+EMAIL_TO=zafarjahangeer512@gmail.com
+
+# Cloudinary (optional — for image/video uploads)
+CLOUDINARY_CLOUD_NAME=
+CLOUDINARY_API_KEY=
+CLOUDINARY_API_SECRET=
 ```
 
-**Getting MongoDB URI (free):**
-1. Go to https://www.mongodb.com/atlas
-2. Create free account → Create free cluster
-3. Click "Connect" → "Connect your application"
-4. Copy the connection string
-5. Replace `<password>` with your database password
-
-**Email setup (optional but recommended):**
+### `apps/web/.env.local`
+```env
+NEXT_PUBLIC_API_URL=http://localhost:4000/api
+NEXT_PUBLIC_SITE_URL=http://localhost:3000
 ```
-EMAIL_USER=yourgmail@gmail.com
-EMAIL_PASS=your_gmail_app_password
-```
-For Gmail app password: Google Account → Security → 2FA → App Passwords
 
 ---
 
-### STEP 3 — Set up the Frontend
+## 📧 Gmail App Password Setup
 
-#### 3a. Install frontend dependencies
+1. Go to Google Account → Security
+2. Enable 2-Factor Authentication
+3. Search "App passwords" → Create one for "Mail"
+4. Paste the 16-character code into `EMAIL_PASS`
+
+---
+
+## 🌐 CMS Features
+
+### From Admin Dashboard you can:
+- **Projects** — Add/edit/delete with thumbnail upload, YouTube embed, Reel URLs
+- **Services** — Manage what services appear on site, reorder them
+- **Testimonials** — Add client reviews, feature/publish toggle
+- **Inquiries** — View contact form submissions, update status, reply via email
+- **Admin Users** — Create sub-admins with custom permissions (superadmin only)
+- **Site Settings** — Change email, WhatsApp, all social links, hero text, SEO
+
+### Media Types Supported:
+- 📸 Image upload (Cloudinary)
+- 🎬 Direct video upload (Cloudinary)
+- ▶️ YouTube embed URL
+- 📱 Instagram Reel / TikTok URL
+
+---
+
+## 🚀 Deploy to Production
+
+### Frontend → Vercel
 ```bash
-cd ../web
-npm install
+# 1. Push to GitHub
+# 2. Import repo at vercel.com
+# 3. Set Root Directory: apps/web
+# 4. Add env vars in Vercel dashboard:
+#    NEXT_PUBLIC_API_URL=https://your-api.railway.app/api
 ```
 
-#### 3b. Create frontend environment file
+### Backend → Railway
 ```bash
-cp .env.local.example .env.local
-```
-
-The defaults work for local development. No changes needed unless you deploy.
-
----
-
-### STEP 4 — Run Both Servers
-
-Open **two terminal windows/tabs**:
-
-**Terminal 1 — Backend:**
-```bash
-cd apps/api
-npm run dev
-```
-You should see:
-```
-✅ MongoDB connected
-🚀 API running on http://localhost:4000
-```
-
-**Terminal 2 — Frontend:**
-```bash
-cd apps/web
-npm run dev
-```
-You should see:
-```
-▲ Next.js 14.x.x
-- Local: http://localhost:3000
+# 1. New project → Deploy from GitHub
+# 2. Set Root Directory: apps/api
+# 3. Add all .env variables in Railway dashboard
+# 4. Add start command: npm run build && npm start
 ```
 
 ---
 
-### STEP 5 — Create Admin Account
-
-Once the API is running, create your admin user by running this in a new terminal:
-
-```bash
-curl -X POST http://localhost:4000/api/auth/create-admin \
-  -H "Content-Type: application/json" \
-  -d '{
-    "email": "admin@ngrxstudio.com",
-    "password": "YourSecurePassword123",
-    "secret": "mysecretadminkey"
-  }'
-```
-
-> ⚠️ The `secret` value must match `ADMIN_SECRET` in your `.env` file.
-
-**On Windows (PowerShell):**
-```powershell
-Invoke-RestMethod -Uri "http://localhost:4000/api/auth/create-admin" `
-  -Method POST `
-  -ContentType "application/json" `
-  -Body '{"email":"admin@ngrxstudio.com","password":"YourSecurePassword123","secret":"mysecretadminkey"}'
-```
-
----
-
-### STEP 6 — Access Your Website
-
-| URL | What it is |
-|-----|-----------|
-| http://localhost:3000 | Main website (public) |
-| http://localhost:3000/admin | Admin login |
-| http://localhost:4000/api/health | API health check |
-
-**Admin login:**
-- Email: whatever you used in Step 5
-- Password: whatever you used in Step 5
-
----
-
-## 🎨 Customization
-
-### Change your contact info
-Edit `apps/web/components/sections/ContactSection.tsx`:
-```tsx
-// Find and replace:
-href="https://wa.me/923001234567"  → your WhatsApp number
-val: 'hello@ngrxstudio.com'        → your email
-```
-
-### Change your WhatsApp number
-Format: `https://wa.me/[country code][number]`
-Example: Pakistan +92 300 1234567 → `https://wa.me/923001234567`
-
-### Change social media links
-Edit `apps/web/components/sections/ContactSection.tsx`:
-```tsx
-const socialLinks = [
-  { label: 'Instagram', icon: '📸', href: 'https://instagram.com/yourhandle' },
-  { label: 'YouTube', icon: '▶️', href: 'https://youtube.com/@yourchannel' },
-  ...
-]
-```
-
-### Change the color accent
-Edit `apps/web/app/globals.css`:
-```css
---color-accent-1: #7C3AED;   /* Main purple — change this */
---color-accent-2: #06B6D4;   /* Cyan accent — change this */
-```
-
----
-
-## 📦 Building for Production
-
-### Build frontend:
-```bash
-cd apps/web
-npm run build
-npm start
-```
-
-### Build backend:
-```bash
-cd apps/api
-npm run build
-node dist/index.js
-```
-
----
-
-## 🌐 Deployment
-
-### Frontend → Vercel (Recommended, free)
-1. Push your code to GitHub
-2. Go to https://vercel.com → New Project → Import from GitHub
-3. Select `apps/web` as the root directory
-4. Add environment variables:
-   - `NEXT_PUBLIC_API_URL` = your deployed API URL
-5. Deploy
-
-### Backend → Railway (Recommended, free tier)
-1. Go to https://railway.app → New Project → Deploy from GitHub
-2. Select `apps/api` as root directory
-3. Add all environment variables from `.env`
-4. Deploy — Railway gives you a URL like `https://xxx.railway.app`
-5. Update `NEXT_PUBLIC_API_URL` in Vercel to point to this URL
-
----
-
-## 🛠️ Troubleshooting
-
-**"Cannot connect to MongoDB"**
-→ Check your `MONGODB_URI` in `.env`
-→ Make sure your IP is whitelisted in MongoDB Atlas (Network Access → Add IP)
-
-**"npm install fails"**
-→ Make sure you're in the right folder (`apps/web` or `apps/api`)
-→ Try `npm install --legacy-peer-deps`
-
-**"Port already in use"**
-→ Change `PORT=4000` to `PORT=4001` in `apps/api/.env`
-
-**"Admin login not working"**
-→ Make sure the API server is running on port 4000
-→ Re-create admin user with Step 5
-
-**"Animations not smooth"**
-→ Make sure you have hardware acceleration enabled in your browser
-→ Try Chrome for the best experience
-
----
-
-## 📂 Key Files Reference
-
-| File | Purpose |
-|------|---------|
-| `apps/web/app/page.tsx` | Home page (all sections) |
-| `apps/web/app/admin/` | Admin dashboard |
-| `apps/web/components/sections/` | All page sections |
-| `apps/web/components/animations/` | Loader, cursor, reveal animations |
-| `apps/web/app/globals.css` | Design tokens, colors |
-| `apps/web/tailwind.config.ts` | Tailwind customization |
-| `apps/api/src/index.ts` | API server entry |
-| `apps/api/src/models/index.ts` | All database schemas |
-| `apps/api/src/routes/index.ts` | All API endpoints |
-
----
-
-## 🔗 API Endpoints
+## 🔑 API Endpoints
 
 ```
-GET    /api/health              ← Check API is alive
-POST   /api/auth/login          ← Admin login
-POST   /api/auth/logout         ← Admin logout
-POST   /api/auth/refresh        ← Refresh access token
+GET  /api/health                  Public  - Health check
+POST /api/auth/login              Public  - Login
+POST /api/auth/refresh            Public  - Refresh token
+POST /api/auth/logout             Public  - Logout
+POST /api/auth/change-password    Auth    - Change password
 
-GET    /api/projects            ← Get all projects (public)
-POST   /api/projects            ← Create project (admin)
-PUT    /api/projects/:id        ← Update project (admin)
-DELETE /api/projects/:id        ← Delete project (admin)
+GET    /api/projects              Public  - List projects
+GET    /api/projects/:slug        Public  - Single project
+POST   /api/projects              Admin   - Create (with file upload)
+PUT    /api/projects/:id          Admin   - Update
+PATCH  /api/projects/:id/toggle-publish Admin - Toggle published
+DELETE /api/projects/:id          Admin   - Delete
 
-POST   /api/contact             ← Submit contact form (public)
-GET    /api/contact             ← View all inquiries (admin)
-PUT    /api/contact/:id         ← Update inquiry status (admin)
+POST /api/contact                 Public  - Submit brief
+GET  /api/contact                 Admin   - View all inquiries
+PUT  /api/contact/:id             Admin   - Update status
 
-GET    /api/testimonials        ← Get all testimonials (public)
-POST   /api/testimonials        ← Create testimonial (admin)
+GET    /api/testimonials          Public  - List published
+POST   /api/testimonials          Admin   - Create
+PUT    /api/testimonials/:id      Admin   - Update
+DELETE /api/testimonials/:id      Admin   - Delete
 
-GET    /api/services            ← Get all services (public)
-POST   /api/services            ← Create service (admin)
+GET    /api/services              Public  - List services
+POST   /api/services              Admin   - Create
+PUT    /api/services/:id          Admin   - Update
+DELETE /api/services/:id          Admin   - Delete
+
+GET    /api/settings              Public  - Get site settings
+PUT    /api/settings              Superadmin - Update settings
+
+GET    /api/admins                Superadmin - List admins
+POST   /api/admins                Superadmin - Create admin
+PUT    /api/admins/:id            Superadmin - Update admin
+DELETE /api/admins/:id            Superadmin - Delete admin
 ```
 
 ---

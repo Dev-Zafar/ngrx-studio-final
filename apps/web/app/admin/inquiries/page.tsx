@@ -1,140 +1,190 @@
 'use client'
 import { useEffect, useState } from 'react'
 import { useAuthStore } from '@/store/useAuthStore'
+import { Button, Badge, Card, Alert, EmptyState, PageHeader } from '@/components/ui/AdminUI'
 
 interface Contact {
-  _id: string
-  name: string
-  email: string
-  budget: string
-  services: string[]
-  brief: string
-  status: 'new' | 'read' | 'replied' | 'archived'
-  createdAt: string
+  _id: string; name: string; email: string; budget: string
+  services: string[]; brief: string
+  status: 'new' | 'read' | 'replied' | 'archived'; createdAt: string
 }
 
-const statusColors: Record<string, string> = {
-  new: 'bg-accent-1/10 text-accent-1 border-accent-1/20',
-  read: 'bg-blue-500/10 text-blue-400 border-blue-500/20',
-  replied: 'bg-green-500/10 text-green-400 border-green-500/20',
-  archived: 'bg-border text-text-3 border-border',
+const STATUS_COLORS: Record<string, 'purple' | 'cyan' | 'green' | 'default'> = {
+  new: 'purple', read: 'cyan', replied: 'green', archived: 'default'
 }
 
 export default function InquiriesPage() {
   const { token } = useAuthStore()
   const [contacts, setContacts] = useState<Contact[]>([])
   const [selected, setSelected] = useState<Contact | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [filter, setFilter] = useState<string>('all')
+  const [msg, setMsg] = useState('')
 
   const api = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api'
   const headers = { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }
 
   const load = async () => {
-    const res = await fetch(`${api}/contact`, { headers })
-    const data = await res.json()
-    if (Array.isArray(data)) setContacts(data)
+    setLoading(true)
+    try {
+      const res = await fetch(`${api}/contact`, { headers })
+      const data = await res.json()
+      if (Array.isArray(data)) setContacts(data)
+    } finally { setLoading(false) }
   }
 
   useEffect(() => { load() }, [])
 
   const updateStatus = async (id: string, status: string) => {
     await fetch(`${api}/contact/${id}`, { method: 'PUT', headers, body: JSON.stringify({ status }) })
+    setMsg('✅ Status updated')
+    setTimeout(() => setMsg(''), 3000)
     load()
-    if (selected?._id === id) setSelected((s) => s ? { ...s, status: status as Contact['status'] } : null)
+    if (selected?._id === id) setSelected(s => s ? { ...s, status: status as Contact['status'] } : null)
   }
+
+  const filtered = filter === 'all' ? contacts : contacts.filter(c => c.status === filter)
+  const newCount = contacts.filter(c => c.status === 'new').length
 
   return (
     <div>
-      <div className="mb-8">
-        <h1 className="font-sora font-bold text-3xl text-text-1">Inquiries</h1>
-        <p className="text-text-3 mt-1 font-space">{contacts.filter((c) => c.status === 'new').length} new · {contacts.length} total</p>
+      <PageHeader
+        title="Inquiries"
+        subtitle={`${newCount} new · ${contacts.length} total`}
+      />
+
+      <Alert message={msg} type="success" />
+
+      {/* Filter tabs */}
+      <div className="flex gap-2 mb-6 p-1 rounded-xl border w-fit" style={{ borderColor: 'var(--color-border)', background: 'var(--color-surface)' }}>
+        {['all', 'new', 'read', 'replied', 'archived'].map(s => (
+          <button key={s} onClick={() => setFilter(s)}
+            className="px-4 py-2 rounded-lg font-mono text-xs tracking-wider uppercase capitalize transition-all duration-200"
+            style={filter === s
+              ? { background: 'var(--color-accent-1)', color: '#fff' }
+              : { color: 'var(--color-text-3)', background: 'transparent' }}>
+            {s} {s === 'new' && newCount > 0 ? `(${newCount})` : ''}
+          </button>
+        ))}
       </div>
 
-      <div className="grid lg:grid-cols-2 gap-6">
-        {/* List */}
-        <div className="space-y-3">
-          {contacts.length === 0 && (
-            <div className="p-8 rounded-2xl border border-border text-center text-text-3 font-space text-sm">No inquiries yet.</div>
-          )}
-          {contacts.map((c) => (
-            <div
-              key={c._id}
-              onClick={() => setSelected(c)}
-              className={`p-5 rounded-2xl border cursor-pointer transition-all duration-200 ${selected?._id === c._id ? 'border-accent-1/40 bg-accent-1/5' : 'border-border bg-surface/40 hover:border-border/80'}`}
-            >
-              <div className="flex items-start justify-between gap-3 mb-2">
-                <div>
-                  <div className="font-space font-semibold text-text-1 text-sm">{c.name}</div>
-                  <div className="font-mono text-xs text-text-3">{c.email}</div>
-                </div>
-                <span className={`px-2 py-0.5 rounded-full border text-xs font-mono capitalize ${statusColors[c.status]}`}>
-                  {c.status}
-                </span>
-              </div>
-              <div className="flex gap-2 flex-wrap">
-                <span className="px-2 py-0.5 rounded border border-border bg-surface text-xs text-text-3">{c.budget}</span>
-                {c.services.slice(0, 2).map((s) => (
-                  <span key={s} className="px-2 py-0.5 rounded border border-border bg-surface text-xs text-text-3">{s}</span>
-                ))}
-                {c.services.length > 2 && <span className="text-xs text-text-3">+{c.services.length - 2}</span>}
-              </div>
-              <p className="text-text-3 text-xs mt-2">{new Date(c.createdAt).toLocaleDateString()}</p>
-            </div>
-          ))}
+      {loading ? (
+        <div className="grid lg:grid-cols-2 gap-6">
+          {[...Array(4)].map((_, i) => <div key={i} className="h-32 rounded-2xl animate-pulse" style={{ background: 'var(--color-surface)' }} />)}
         </div>
+      ) : filtered.length === 0 ? (
+        <Card>
+          <EmptyState icon="📥" title="No inquiries found"
+            description={filter === 'all' ? "When clients fill out your contact form, inquiries appear here." : `No ${filter} inquiries.`} />
+        </Card>
+      ) : (
+        <div className="grid lg:grid-cols-2 gap-6">
+          {/* List */}
+          <div className="space-y-3">
+            {filtered.map(c => (
+              <button key={c._id} onClick={() => updateStatus(c._id, c.status === 'new' ? 'read' : c.status).then(() => setSelected(c))}
+                className="w-full text-left p-5 rounded-2xl border transition-all duration-200"
+                style={{
+                  borderColor: selected?._id === c._id ? 'var(--color-accent-1)' : c.status === 'new' ? 'rgba(124,58,237,0.3)' : 'var(--color-border)',
+                  background: selected?._id === c._id ? 'rgba(124,58,237,0.06)' : 'var(--color-surface)',
+                }}>
+                <div className="flex items-start justify-between gap-3 mb-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-full flex items-center justify-center text-white text-sm font-bold flex-shrink-0"
+                      style={{ background: 'linear-gradient(135deg, var(--color-accent-1), var(--color-accent-3))' }}>
+                      {c.name[0].toUpperCase()}
+                    </div>
+                    <div>
+                      <p className="font-space font-semibold text-sm" style={{ color: 'var(--color-text-1)' }}>{c.name}</p>
+                      <p className="font-mono text-xs" style={{ color: 'var(--color-text-3)' }}>{c.email}</p>
+                    </div>
+                  </div>
+                  <Badge color={STATUS_COLORS[c.status] || 'default'}>{c.status}</Badge>
+                </div>
+                <div className="flex flex-wrap gap-1.5 mb-2">
+                  <span className="px-2 py-0.5 rounded text-xs font-mono" style={{ background: 'var(--color-border)', color: 'var(--color-text-3)' }}>{c.budget}</span>
+                  {c.services?.slice(0, 2).map(s => (
+                    <span key={s} className="px-2 py-0.5 rounded text-xs font-mono" style={{ background: 'var(--color-border)', color: 'var(--color-text-3)' }}>{s}</span>
+                  ))}
+                  {(c.services?.length || 0) > 2 && <span className="text-xs" style={{ color: 'var(--color-text-3)' }}>+{c.services.length - 2}</span>}
+                </div>
+                <p className="font-mono text-xs" style={{ color: 'var(--color-text-3)' }}>
+                  {new Date(c.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                </p>
+              </button>
+            ))}
+          </div>
 
-        {/* Detail */}
-        {selected ? (
-          <div className="p-6 rounded-2xl border border-border bg-surface/40 h-fit sticky top-8">
-            <div className="flex items-start justify-between mb-6">
-              <div>
-                <h2 className="font-sora font-bold text-xl text-text-1">{selected.name}</h2>
-                <a href={`mailto:${selected.email}`} className="text-accent-2 text-sm hover:underline">{selected.email}</a>
+          {/* Detail */}
+          {selected ? (
+            <Card className="h-fit sticky top-8">
+              <div className="flex items-start justify-between mb-5">
+                <div>
+                  <h2 className="font-sora font-bold text-xl" style={{ color: 'var(--color-text-1)' }}>{selected.name}</h2>
+                  <a href={`mailto:${selected.email}`} className="font-mono text-sm"
+                    style={{ color: 'var(--color-accent-2)' }}>{selected.email}</a>
+                </div>
+                <Badge color={STATUS_COLORS[selected.status] || 'default'}>{selected.status}</Badge>
               </div>
-              <span className={`px-3 py-1 rounded-full border text-xs font-mono capitalize ${statusColors[selected.status]}`}>
-                {selected.status}
-              </span>
-            </div>
 
-            <div className="space-y-4 mb-6">
-              <div>
-                <p className="font-mono text-xs text-text-3 tracking-wider uppercase mb-1">Budget</p>
-                <p className="font-space text-text-1 text-sm">{selected.budget}</p>
+              <div className="space-y-4 mb-6">
+                <div>
+                  <p className="font-mono text-xs tracking-wider uppercase mb-1.5" style={{ color: 'var(--color-text-3)' }}>Budget</p>
+                  <p className="font-space text-sm font-medium" style={{ color: 'var(--color-text-1)' }}>{selected.budget}</p>
+                </div>
+                <div>
+                  <p className="font-mono text-xs tracking-wider uppercase mb-1.5" style={{ color: 'var(--color-text-3)' }}>Services Requested</p>
+                  <div className="flex flex-wrap gap-2">
+                    {selected.services?.map(s => <Badge key={s} color="purple">{s}</Badge>)}
+                  </div>
+                </div>
+                <div>
+                  <p className="font-mono text-xs tracking-wider uppercase mb-1.5" style={{ color: 'var(--color-text-3)' }}>Project Brief</p>
+                  <p className="font-space text-sm leading-relaxed p-4 rounded-xl border"
+                    style={{ color: 'var(--color-text-2)', background: 'var(--color-void)', borderColor: 'var(--color-border)' }}>
+                    {selected.brief}
+                  </p>
+                </div>
+                <div>
+                  <p className="font-mono text-xs tracking-wider uppercase mb-1.5" style={{ color: 'var(--color-text-3)' }}>Received</p>
+                  <p className="font-space text-sm" style={{ color: 'var(--color-text-2)' }}>
+                    {new Date(selected.createdAt).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+                  </p>
+                </div>
               </div>
+
+              {/* Status actions */}
               <div>
-                <p className="font-mono text-xs text-text-3 tracking-wider uppercase mb-1">Services</p>
-                <div className="flex flex-wrap gap-2">
-                  {selected.services.map((s) => (
-                    <span key={s} className="px-3 py-1 rounded-lg border border-border bg-void text-xs text-text-2">{s}</span>
+                <p className="font-mono text-xs tracking-wider uppercase mb-3" style={{ color: 'var(--color-text-3)' }}>Update Status</p>
+                <div className="grid grid-cols-2 gap-2">
+                  {(['new', 'read', 'replied', 'archived'] as const).map(s => (
+                    <button key={s} onClick={() => updateStatus(selected._id, s)}
+                      className="px-3 py-2 rounded-xl border text-xs font-space font-medium capitalize transition-all duration-200"
+                      style={selected.status === s
+                        ? { background: 'rgba(124,58,237,0.12)', color: 'var(--color-accent-1)', borderColor: 'rgba(124,58,237,0.3)' }
+                        : { color: 'var(--color-text-2)', borderColor: 'var(--color-border)', background: 'transparent' }}>
+                      {s}
+                    </button>
                   ))}
                 </div>
+                {/* Quick reply via email */}
+                <a href={`mailto:${selected.email}?subject=Re: Your Project Brief — NGRX Studio&body=Hi ${selected.name},%0D%0A%0D%0AThank you for reaching out to NGRX Studio!%0D%0A%0D%0A`}
+                  className="mt-3 w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border font-space text-sm transition-all"
+                  style={{ borderColor: 'var(--color-border)', color: 'var(--color-text-2)', background: 'transparent' }}
+                  onMouseEnter={e => { (e.currentTarget as HTMLAnchorElement).style.borderColor = 'var(--color-accent-2)'; (e.currentTarget as HTMLAnchorElement).style.color = 'var(--color-accent-2)' }}
+                  onMouseLeave={e => { (e.currentTarget as HTMLAnchorElement).style.borderColor = 'var(--color-border)'; (e.currentTarget as HTMLAnchorElement).style.color = 'var(--color-text-2)' }}>
+                  ✉️ Reply via Email
+                </a>
               </div>
-              <div>
-                <p className="font-mono text-xs text-text-3 tracking-wider uppercase mb-1">Brief</p>
-                <p className="font-space text-text-2 text-sm leading-relaxed bg-void/50 p-4 rounded-xl border border-border">{selected.brief}</p>
-              </div>
+            </Card>
+          ) : (
+            <div className="flex items-center justify-center h-64 rounded-2xl border border-dashed"
+              style={{ borderColor: 'var(--color-border)' }}>
+              <p className="font-space text-sm" style={{ color: 'var(--color-text-3)' }}>Select an inquiry to view details</p>
             </div>
-
-            <div>
-              <p className="font-mono text-xs text-text-3 tracking-wider uppercase mb-3">Update Status</p>
-              <div className="flex flex-wrap gap-2">
-                {(['new', 'read', 'replied', 'archived'] as const).map((s) => (
-                  <button
-                    key={s}
-                    onClick={() => updateStatus(selected._id, s)}
-                    className={`px-4 py-2 rounded-xl border text-xs font-space capitalize transition-all duration-200 ${selected.status === s ? statusColors[s] : 'border-border text-text-3 hover:border-border/80'}`}
-                  >
-                    {s}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
-        ) : (
-          <div className="p-8 rounded-2xl border border-border border-dashed flex items-center justify-center">
-            <p className="text-text-3 font-space text-sm">Select an inquiry to view details</p>
-          </div>
-        )}
-      </div>
+          )}
+        </div>
+      )}
     </div>
   )
 }
