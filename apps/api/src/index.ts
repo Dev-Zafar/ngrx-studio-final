@@ -43,5 +43,5 @@ app.use((err: Error, _req: express.Request, res: express.Response, _next: expres
 
 // ─── Start ────────────────────────────────────────────────
 connectDB().then(() => {
-  app.listen(PORT, () => console.log(`🚀 API running → http://localhost:${PORT}`))
+  app.listen(PORT as number, '0.0.0.0', () => console.log(`🚀 API running → on port ${PORT}`))
 })
