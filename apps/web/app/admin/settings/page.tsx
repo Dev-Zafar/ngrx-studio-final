@@ -149,7 +149,7 @@ export default function SettingsPage() {
               ].map(({ key, label, placeholder, type, tip }) => (
                 <div key={key}>
                   <label className="block font-mono text-xs tracking-wider uppercase mb-2" style={{ color: 'var(--color-text-3)' }}>{label}</label>
-                  <input type={type} value={(settings as Record<string,unknown>)[key] as string}
+                  <input type={type} value={settings[key as keyof Settings] as string}
                     onChange={e => setSettings(s => ({ ...s, [key]: e.target.value }))}
                     placeholder={placeholder} className={inp} style={inpStyle} />
                   <p className="text-xs mt-1.5" style={{ color: 'var(--color-text-3)' }}>{tip}</p>
@@ -199,7 +199,7 @@ export default function SettingsPage() {
                   <label className="flex items-center gap-2 font-mono text-xs tracking-wider uppercase mb-2" style={{ color: 'var(--color-text-3)' }}>
                     <span>{icon}</span> {label}
                   </label>
-                  <input type="url" value={(settings as Record<string,unknown>)[key] as string}
+                  <input type="url" value={settings[key as keyof Settings] as string}
                     onChange={e => setSettings(s => ({ ...s, [key]: e.target.value }))}
                     placeholder={placeholder} className={inp} style={inpStyle} />
                 </div>
@@ -327,7 +327,7 @@ export default function SettingsPage() {
                 <div key={key}>
                   <label className="block font-mono text-xs tracking-wider uppercase mb-2" style={{ color: 'var(--color-text-3)' }}>{label}</label>
                   <input type="password"
-                    value={(pwForm as Record<string,string>)[key]}
+                    value={pwForm[key as keyof typeof pwForm]}
                     onChange={e => setPwForm(f => ({ ...f, [key]: e.target.value }))}
                     placeholder="••••••••" className={inp} style={inpStyle} />
                 </div>
