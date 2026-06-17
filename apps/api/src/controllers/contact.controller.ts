@@ -1,7 +1,9 @@
 import { Request, Response } from 'express'
-import nodemailer from 'nodemailer'
+import { Resend } from 'resend'
 import { Contact } from '../models'
 import { z } from 'zod'
+
+const resend = new Resend(process.env.RESEND_API_KEY)
 
 const schema = z.object({
   name:     z.string().min(2),
@@ -12,24 +14,10 @@ const schema = z.object({
 })
 
 async function sendEmail(data: z.infer<typeof schema>): Promise<void> {
-  if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) return
   try {
-    const transporter = nodemailer.createTransport({
-      service: 'gmail',
-      host: 'smtp.gmail.com',
-      port: 587,
-      secure: false, // Use TLS
-      auth: { 
-        user: process.env.EMAIL_USER, 
-        pass: process.env.EMAIL_PASS 
-      },
-      connectionTimeout: 10000, // 10 seconds
-      greetingTimeout: 10000,
-    })
-    
-    await transporter.sendMail({
-      from: process.env.EMAIL_USER,
-      to: process.env.EMAIL_TO || process.env.EMAIL_USER,
+    await resend.emails.send({
+      from: 'NGRX Studio <onboarding@resend.dev>',
+      to: process.env.EMAIL_TO || process.env.EMAIL_USER || 'your-email@gmail.com',
       subject: `🚀 New Brief from ${data.name} — NGRX Studio`,
       html: `
         <div style="font-family:sans-serif;max-width:600px;margin:0 auto;background:#080810;color:#F8F8FF;padding:32px;border-radius:12px;">
@@ -58,7 +46,6 @@ export async function submitContact(req: Request, res: Response): Promise<void> 
   try {
     const data = schema.parse(req.body)
     const contact = await Contact.create(data)
-    // fire-and-forget — don't block the response
     sendEmail(data)
     res.status(201).json({ message: 'Brief received', id: contact._id })
   } catch (err) {
