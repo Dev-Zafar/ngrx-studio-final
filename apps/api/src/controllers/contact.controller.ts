@@ -3,6 +3,7 @@ import { Resend } from 'resend'
 import { Contact } from '../models'
 import { z } from 'zod'
 
+// Ensure your RESEND_API_KEY is set in Render Environment Variables
 const resend = new Resend(process.env.RESEND_API_KEY)
 
 const schema = z.object({
@@ -14,8 +15,9 @@ const schema = z.object({
 })
 
 async function sendEmail(data: z.infer<typeof schema>): Promise<void> {
+  console.log('--- Email Process Started ---')
   try {
-    await resend.emails.send({
+    const { data: resendData, error } = await resend.emails.send({
       from: 'NGRX Studio <onboarding@resend.dev>',
       to: process.env.EMAIL_TO || process.env.EMAIL_USER || 'your-email@gmail.com',
       subject: `🚀 New Brief from ${data.name} — NGRX Studio`,
@@ -24,7 +26,7 @@ async function sendEmail(data: z.infer<typeof schema>): Promise<void> {
           <h2 style="color:#7C3AED;margin-bottom:24px;">New Project Brief</h2>
           <table style="width:100%;border-collapse:collapse;">
             <tr><td style="padding:8px 0;color:#A0A0B8;width:100px;">Name</td><td>${data.name}</td></tr>
-            <tr><td style="padding:8px 0;color:#A0A0B8;">Email</td><td><a href="mailto:${data.email}" style="color:#06B6D4;">${data.email}</a></td></tr>
+            <tr><td style="padding:8px 0;color:#A0A0B8;">Email</td><td>${data.email}</td></tr>
             <tr><td style="padding:8px 0;color:#A0A0B8;">Budget</td><td>${data.budget}</td></tr>
             <tr><td style="padding:8px 0;color:#A0A0B8;">Services</td><td>${data.services.join(', ')}</td></tr>
           </table>
@@ -32,13 +34,16 @@ async function sendEmail(data: z.infer<typeof schema>): Promise<void> {
             <p style="color:#A0A0B8;margin:0 0 8px;font-size:12px;text-transform:uppercase;letter-spacing:2px;">Brief</p>
             <p style="margin:0;line-height:1.6;">${data.brief}</p>
           </div>
-          <div style="margin-top:24px;">
-            <a href="mailto:${data.email}?subject=Re: Your Project Brief — NGRX Studio" style="display:inline-block;padding:12px 24px;background:#7C3AED;color:#fff;border-radius:8px;text-decoration:none;font-weight:600;">Reply to ${data.name}</a>
-          </div>
         </div>`,
     })
+
+    if (error) {
+      console.error('Resend API Error:', error)
+      return
+    }
+    console.log('Email sent successfully! ID:', resendData?.id)
   } catch (err) {
-    console.error('Email send failed:', err)
+    console.error('Unexpected email error:', err)
   }
 }
 
@@ -46,9 +51,13 @@ export async function submitContact(req: Request, res: Response): Promise<void> 
   try {
     const data = schema.parse(req.body)
     const contact = await Contact.create(data)
+    
+    console.log('Contact saved to MongoDB, triggering email...')
     sendEmail(data)
+    
     res.status(201).json({ message: 'Brief received', id: contact._id })
   } catch (err) {
+    console.error('Submission Error:', err)
     if (err instanceof z.ZodError) { res.status(400).json({ error: err.errors }); return }
     res.status(500).json({ error: 'Server error' })
   }
