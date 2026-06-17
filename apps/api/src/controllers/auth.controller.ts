@@ -10,6 +10,13 @@ function generateTokens(payload: { id: string; email: string; role: string; perm
   return { accessToken, refreshToken }
 }
 
+// Helper for cookie options (Allows cross-domain Vercel -> Render)
+const cookieOptions = {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === 'production',
+  sameSite: process.env.NODE_ENV === 'production' ? 'none' as const : 'lax' as const,
+}
+
 export async function login(req: Request, res: Response): Promise<void> {
   try {
     const { email, password } = req.body
@@ -23,10 +30,8 @@ export async function login(req: Request, res: Response): Promise<void> {
     user.refreshTokens.push(refreshToken)
     user.lastLogin = new Date()
     await user.save()
-    res.cookie('refreshToken', refreshToken, {
-      httpOnly: true, secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict', maxAge: 7 * 24 * 60 * 60 * 1000
-    })
+    
+    res.cookie('refreshToken', refreshToken, { ...cookieOptions, maxAge: 7 * 24 * 60 * 60 * 1000 })
     res.json({ accessToken, user: { id: user._id, email: user.email, name: user.name, role: user.role, permissions: user.permissions } })
   } catch (err) { console.error(err); res.status(500).json({ error: 'Server error' }) }
 }
@@ -46,10 +51,8 @@ export async function refresh(req: Request, res: Response): Promise<void> {
     })
     user.refreshTokens.push(newRefresh)
     await user.save()
-    res.cookie('refreshToken', newRefresh, {
-      httpOnly: true, secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict', maxAge: 7 * 24 * 60 * 60 * 1000
-    })
+    
+    res.cookie('refreshToken', newRefresh, { ...cookieOptions, maxAge: 7 * 24 * 60 * 60 * 1000 })
     res.json({ accessToken })
   } catch { res.status(401).json({ error: 'Invalid refresh token' }) }
 }
@@ -64,7 +67,7 @@ export async function logout(req: Request, res: Response): Promise<void> {
         if (user) { user.refreshTokens = user.refreshTokens.filter((t: string) => t !== token); await user.save() }
       }
     }
-    res.clearCookie('refreshToken')
+    res.clearCookie('refreshToken', cookieOptions)
     res.json({ message: 'Logged out' })
   } catch { res.status(500).json({ error: 'Server error' }) }
 }
@@ -82,7 +85,8 @@ export async function changePassword(req: AuthRequest, res: Response): Promise<v
     user.passwordHash = await bcrypt.hash(newPassword, 12)
     user.refreshTokens = []
     await user.save()
-    res.clearCookie('refreshToken')
+    
+    res.clearCookie('refreshToken', cookieOptions)
     res.json({ message: 'Password updated. Please log in again.' })
   } catch { res.status(500).json({ error: 'Server error' }) }
 }
