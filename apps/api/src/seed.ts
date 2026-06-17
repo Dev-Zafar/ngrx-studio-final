@@ -39,11 +39,11 @@ async function seed() {
   const servicesCount = await Service.countDocuments()
   if (servicesCount === 0) {
     await Service.insertMany([
-      { title: 'Video Editing', slug: 'video-editing', icon: '🎬', shortDescription: 'Cinematic cuts for YouTube, Reels, Shorts, and brand films.', deliverables: ['Long-form editing','Short-form editing','Color grading','Sound design'], order: 1, published: true },
-      { title: 'Motion Graphics', slug: 'motion-graphics', icon: '✨', shortDescription: 'Animated title cards, transitions, and motion content.', deliverables: ['Intro/Outro animations','Lower thirds','Kinetic typography','Logo animation'], order: 2, published: true },
-      { title: 'Graphic Design', slug: 'graphic-design', icon: '🎨', shortDescription: 'Thumbnails, social posts, and brand assets designed to stop the scroll.', deliverables: ['YouTube thumbnails','Social media posts','Brand assets','Banners'], order: 3, published: true },
-      { title: 'Social Media Management', slug: 'social-media', icon: '📱', shortDescription: 'Full-stack content systems across all major platforms.', deliverables: ['Content calendar','Posting & scheduling','Community management','Analytics reports'], order: 4, published: true },
-      { title: 'Content Strategy', slug: 'content-strategy', icon: '🚀', shortDescription: 'Data-driven roadmaps and repurposing frameworks.', deliverables: ['Content audit','Growth strategy','Repurposing system','SEO scripting'], order: 5, published: true },
+      { title: 'Video Editing', slug: 'video-editing', icon: 'video', shortDescription: 'Cinematic cuts for YouTube, Reels, Shorts, and brand films.', deliverables: ['Long-form editing','Short-form editing','Color grading','Sound design'], order: 1, published: true },
+      { title: 'Motion Graphics', slug: 'motion-graphics', icon: 'sparkles', shortDescription: 'Animated title cards, transitions, and motion content.', deliverables: ['Intro/Outro animations','Lower thirds','Kinetic typography','Logo animation'], order: 2, published: true },
+      { title: 'Graphic Design', slug: 'graphic-design', icon: 'paintbrush', shortDescription: 'Thumbnails, social posts, and brand assets designed to stop the scroll.', deliverables: ['YouTube thumbnails','Social media posts','Brand assets','Banners'], order: 3, published: true },
+      { title: 'Social Media Management', slug: 'social-media', icon: 'globe', shortDescription: 'Full-stack content systems across all major platforms.', deliverables: ['Content calendar','Posting & scheduling','Community management','Analytics reports'], order: 4, published: true },
+      { title: 'Content Strategy', slug: 'content-strategy', icon: 'rocket', shortDescription: 'Data-driven roadmaps and repurposing frameworks.', deliverables: ['Content audit','Growth strategy','Repurposing system','SEO scripting'], order: 5, published: true },
     ])
     console.log('✅ Services seeded')
   }

@@ -3,13 +3,14 @@ import React from 'react'
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { FadeIn, RevealText } from '@/components/animations/RevealText'
+import { Search, Scissors, Clapperboard, RefreshCw, Rocket, Clock } from 'lucide-react'
 
 const steps = [
-  { num: '01', title: 'Discovery & Brief', desc: 'You share your content, goals, and platform focus. I audit what exists and map the strategy before touching a timeline.', details: ['Content audit','Platform strategy','Audience research','Style reference collection','Project brief sign-off'], icon: '🔍', duration: '1–2 days' },
-  { num: '02', title: 'Clip Selection', desc: 'For podcasts and long videos, I identify the highest-value moments — hooks, insights, and emotional peaks — before editing begins.', details: ['Transcript review','Hook identification','Moment tagging','Sequence planning','Client approval'], icon: '✂️', duration: '1–2 days' },
-  { num: '03', title: 'Editing & Production', desc: 'Full editing with captions, b-roll, music, color grading, and motion graphics. Every second earns its place.', details: ['Video editing','Caption design','Music selection','Color grading','Motion graphics'], icon: '🎬', duration: '3–7 days' },
-  { num: '04', title: 'Review & Revision', desc: 'You review the cuts. I refine based on feedback with up to 3 revision rounds until it\'s exactly right.', details: ['Client review portal','Feedback integration','Up to 3 revisions','Quality assurance','Format optimisation'], icon: '🔄', duration: '2–3 days' },
-  { num: '05', title: 'Delivery & Growth', desc: 'Files delivered in all required formats, platform-optimised. I monitor performance and iterate on what works.', details: ['Multi-format export','Platform-optimised specs','Analytics review','Performance report','Next sprint planning'], icon: '🚀', duration: 'Ongoing' },
+  { num: '01', title: 'Discovery & Brief', desc: 'You share your content, goals, and platform focus. I audit what exists and map the strategy before touching a timeline.', details: ['Content audit','Platform strategy','Audience research','Style reference collection','Project brief sign-off'], icon: <Search size="1em" strokeWidth={1.5} />, duration: '1–2 days' },
+  { num: '02', title: 'Clip Selection', desc: 'For podcasts and long videos, I identify the highest-value moments — hooks, insights, and emotional peaks — before editing begins.', details: ['Transcript review','Hook identification','Moment tagging','Sequence planning','Client approval'], icon: <Scissors size="1em" strokeWidth={1.5} />, duration: '1–2 days' },
+  { num: '03', title: 'Editing & Production', desc: 'Full editing with captions, b-roll, music, color grading, and motion graphics. Every second earns its place.', details: ['Video editing','Caption design','Music selection','Color grading','Motion graphics'], icon: <Clapperboard size="1em" strokeWidth={1.5} />, duration: '3–7 days' },
+  { num: '04', title: 'Review & Revision', desc: 'You review the cuts. I refine based on feedback with up to 3 revision rounds until it\'s exactly right.', details: ['Client review portal','Feedback integration','Up to 3 revisions','Quality assurance','Format optimisation'], icon: <RefreshCw size="1em" strokeWidth={1.5} />, duration: '2–3 days' },
+  { num: '05', title: 'Delivery & Growth', desc: 'Files delivered in all required formats, platform-optimised. I monitor performance and iterate on what works.', details: ['Multi-format export','Platform-optimised specs','Analytics review','Performance report','Next sprint planning'], icon: <Rocket size="1em" strokeWidth={1.5} />, duration: 'Ongoing' },
 ]
 
 export function ProcessSection() {
@@ -69,7 +70,7 @@ export function ProcessSection() {
                   <p className="leading-relaxed mb-4" style={{ color: 'var(--color-text-2)' }}>{steps[active].desc}</p>
                   <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border font-mono text-xs"
                     style={{ borderColor: 'rgba(6,182,212,0.3)', background: 'rgba(6,182,212,0.07)', color: 'var(--color-accent-2)' }}>
-                    ⏱ {steps[active].duration}
+                    <Clock size="1.2em" strokeWidth={1.5} /> {steps[active].duration}
                   </span>
                 </div>
                 <div>

@@ -3,18 +3,19 @@ import React from 'react'
 import { useEffect, useState } from 'react'
 import { FadeIn, RevealText } from '@/components/animations/RevealText'
 import { motion } from 'framer-motion'
+import { DynamicIcon } from '../ui/IconMap'
 
 interface Service { _id: string; title: string; icon: string; shortDescription: string; deliverables: string[]; order: number }
 
 const FALLBACK: Service[] = [
-  { _id:'1', title:'Short-Form Editing', icon:'✂️', shortDescription:'Cutting podcasts, interviews, and long videos into viral Shorts, Reels, and TikToks with scroll-stopping hooks.', deliverables:['YouTube Shorts','Instagram Reels','TikTok Videos','LinkedIn Clips'], order:1 },
-  { _id:'2', title:'Podcast Clipping', icon:'🎙️', shortDescription:'Extracting the best moments from long podcast episodes and turning them into shareable social content.', deliverables:['Audiogram clips','Quote cards','Highlight reels','Multi-platform cuts'], order:2 },
-  { _id:'3', title:'YouTube Editing', icon:'🎬', shortDescription:'Full long-form YouTube video editing with retention-optimised pacing, b-roll, and motion graphics.', deliverables:['Long-form editing','Thumbnail design','End screens','Color grading'], order:3 },
-  { _id:'4', title:'Motion Graphics', icon:'✨', shortDescription:'Animated text, transitions, and visual effects that make content feel premium and professional.', deliverables:['Kinetic typography','Animated intros','Lower thirds','Logo animations'], order:4 },
-  { _id:'5', title:'Graphic Design', icon:'🎨', shortDescription:'Thumbnails, social posts, and brand assets designed to stop the scroll and communicate instantly.', deliverables:['YouTube thumbnails','Social posts','Story templates','Brand assets'], order:5 },
+  { _id: '1', title: 'Short-Form Editing', icon: 'scissors', shortDescription: 'Cutting podcasts, interviews, and long videos into viral Shorts, Reels, and TikToks with scroll-stopping hooks.', deliverables: ['YouTube Shorts', 'Instagram Reels', 'TikTok Videos', 'LinkedIn Clips'], order: 1 },
+  { _id: '2', title: 'Podcast Clipping', icon: 'mic', shortDescription: 'Extracting the best moments from long podcast episodes and turning them into shareable social content.', deliverables: ['Audiogram clips', 'Quote cards', 'Highlight reels', 'Multi-platform cuts'], order: 2 },
+  { _id: '3', title: 'YouTube Editing', icon: 'monitor-play', shortDescription: 'Full long-form YouTube video editing with retention-optimised pacing, b-roll, and motion graphics.', deliverables: ['Long-form editing', 'Thumbnail design', 'End screens', 'Color grading'], order: 3 },
+  { _id: '4', title: 'Motion Graphics', icon: 'sparkles', shortDescription: 'Animated text, transitions, and visual effects that make content feel premium and professional.', deliverables: ['Kinetic typography', 'Animated intros', 'Lower thirds', 'Logo animations'], order: 4 },
+  { _id: '5', title: 'Graphic Design', icon: 'paintbrush', shortDescription: 'Thumbnails, social posts, and brand assets designed to stop the scroll and communicate instantly.', deliverables: ['YouTube thumbnails', 'Social posts', 'Story templates', 'Brand assets'], order: 5 },
 ]
 
-const ACCENTS = ['#7C3AED','#06B6D4','#A855F7','#7C3AED','#06B6D4']
+const ACCENTS = ['#7C3AED', '#06B6D4', '#A855F7', '#7C3AED', '#06B6D4']
 
 export function ServicesSection() {
   const [services, setServices] = useState<Service[]>([])
@@ -60,7 +61,9 @@ export function ServicesSection() {
 
                   <div className="relative z-10">
                     <div className="flex items-center justify-between mb-5">
-                      <span className="text-3xl">{svc.icon}</span>
+                      <span className="text-3xl text-[var(--color-text-1)]">
+                        <DynamicIcon name={svc.icon} className="w-8 h-8" strokeWidth={1.5} />
+                      </span>
                       <span className="font-mono text-xs" style={{ color: 'var(--color-text-3)' }}>0{i + 1}</span>
                     </div>
                     <h3 className="font-sora font-bold text-lg mb-3 transition-colors duration-300"

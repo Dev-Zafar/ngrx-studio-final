@@ -2,6 +2,11 @@
 import { useEffect, useState } from 'react'
 import { useAuthStore } from '@/store/useAuthStore'
 import { Button, Input, Textarea, Toggle, Badge, Card, Alert, EmptyState, PageHeader, ConfirmDialog } from '@/components/ui/AdminUI'
+import { 
+  Scissors, Mic, MonitorPlay, Sparkles, Paintbrush, 
+  Search, Clapperboard, RefreshCw, Rocket, Video, 
+  Target, Lightbulb, BarChart, Globe, Briefcase, Camera
+} from 'lucide-react'
 
 interface Service {
   _id: string; title: string; slug: string; icon: string
@@ -9,8 +14,40 @@ interface Service {
   deliverables: string[]; order: number; published: boolean
 }
 
-const ICON_OPTIONS = ['🎬','✂️','🎵','📱','🎨','✨','🚀','📹','🎯','💡','📊','🌐','💼','🎙️','📸']
-const empty = { title: '', icon: '🎬', shortDescription: '', fullDescription: '', deliverables: '', order: 0, published: true }
+// 1. Map string keys from the DB to actual Lucide SVG Components
+const IconMap: Record<string, React.ElementType> = {
+  'scissors': Scissors,
+  'mic': Mic,
+  'monitor-play': MonitorPlay,
+  'sparkles': Sparkles,
+  'paintbrush': Paintbrush,
+  'search': Search,
+  'clapperboard': Clapperboard,
+  'refresh': RefreshCw,
+  'rocket': Rocket,
+  'video': Video,
+  'target': Target,
+  'lightbulb': Lightbulb,
+  'bar-chart': BarChart,
+  'globe': Globe,
+  'briefcase': Briefcase,
+  'camera': Camera
+}
+
+// 2. Dynamic icon renderer
+function DynamicIcon({ name, className = '' }: { name: string, className?: string }) {
+  const IconComponent = IconMap[name] || Sparkles // Fallback icon
+  return <IconComponent className={className} strokeWidth={1.5} />
+}
+
+// 3. Updated options to use string keys instead of emojis
+const ICON_OPTIONS = [
+  'video', 'scissors', 'mic', 'monitor-play', 'sparkles', 
+  'paintbrush', 'rocket', 'target', 'lightbulb', 'bar-chart', 
+  'globe', 'briefcase', 'camera'
+]
+
+const empty = { title: '', icon: 'video', shortDescription: '', fullDescription: '', deliverables: '', order: 0, published: true }
 
 export default function ServicesPage() {
   const { token } = useAuthStore()
@@ -117,17 +154,17 @@ export default function ServicesPage() {
             {editId ? '✏️ Edit Service' : '+ New Service'}
           </h2>
 
-          {/* Icon picker */}
+          {/* SVG Icon picker */}
           <div className="mb-5">
             <label className="block font-mono text-xs tracking-wider uppercase mb-3" style={{ color: 'var(--color-text-3)' }}>Service Icon</label>
             <div className="flex flex-wrap gap-2">
               {ICON_OPTIONS.map(icon => (
                 <button key={icon} type="button" onClick={() => setForm(f => ({ ...f, icon }))}
-                  className="w-10 h-10 rounded-xl border text-xl transition-all duration-150 hover:scale-110"
+                  className="w-10 h-10 rounded-xl border flex items-center justify-center transition-all duration-150 hover:scale-110"
                   style={form.icon === icon
-                    ? { borderColor: 'var(--color-accent-1)', background: 'rgba(124,58,237,0.15)' }
-                    : { borderColor: 'var(--color-border)', background: 'transparent' }}>
-                  {icon}
+                    ? { borderColor: 'var(--color-accent-1)', background: 'rgba(124,58,237,0.15)', color: 'var(--color-accent-1)' }
+                    : { borderColor: 'var(--color-border)', background: 'transparent', color: 'var(--color-text-2)' }}>
+                  <DynamicIcon name={icon} className="w-5 h-5" />
                 </button>
               ))}
             </div>
@@ -199,10 +236,10 @@ export default function ServicesPage() {
                     style={{ color: 'var(--color-text-3)', background: 'var(--color-border)' }}>↓</button>
                 </div>
 
-                {/* Icon */}
-                <div className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl flex-shrink-0"
-                  style={{ background: 'var(--color-surface2, var(--color-void))', border: '1px solid var(--color-border)' }}>
-                  {s.icon}
+                {/* SVG Icon Display */}
+                <div className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
+                  style={{ background: 'var(--color-surface2, var(--color-void))', border: '1px solid var(--color-border)', color: 'var(--color-text-1)' }}>
+                  <DynamicIcon name={s.icon} className="w-6 h-6" />
                 </div>
 
                 {/* Info */}
