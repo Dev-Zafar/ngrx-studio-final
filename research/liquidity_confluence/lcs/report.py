@@ -80,7 +80,7 @@ def ctrl_rank(ctrl_entry):
 def classify(test, plus25, plus50, wf_pos, ctrl_min_pct, mc_p5, fragile):
     """Pre-declared evidence rules (see STRATEGY_SPEC.md §24)."""
     n, e, pv = test.get("trades", 0), test.get("expectancy_R"), test.get("p_value")
-    if not n or e is None or np.isnan(e) or e <= 0:
+    if not n or n < 30 or e is None or np.isnan(e) or e <= 0:
         return "No evidence"
     if ctrl_min_pct is not None and not np.isnan(ctrl_min_pct) and ctrl_min_pct < 75:
         return "No evidence"
@@ -386,7 +386,7 @@ def write_report(R, out_dir):
     w("Rules (declared before running): **Strong** = test exp>0, p<0.01, n≥100, ≥70% positive WF windows, "
       "strategy ≥95th pct of every random control, still >0 at +50% costs, bootstrap 5th-pct return >0, not "
       "fragile. **Moderate** = test exp>0, p<0.05, n≥50, ≥60% WF windows positive, ≥90th pct of controls, "
-      ">0 at +25% costs, not fragile. **Weak** = test exp>0 but the above not met. **No evidence** = test "
+      ">0 at +25% costs, not fragile. **Weak** = test exp>0 with n≥30 but the above not met. **No evidence** = fewer than 30 OOS trades, test "
       "exp≤0 under realistic costs, or below the 75th percentile of any random control.\n\n")
     rows = [dict(market=m, classification=c[0], wf_positive_share=c[1],
                  min_control_percentile=c[2]) for m, c in classes.items()]

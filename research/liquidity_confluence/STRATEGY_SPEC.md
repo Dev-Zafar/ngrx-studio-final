@@ -232,5 +232,5 @@ See REPORT §16. Summary:
 
 * **Strong:** OOS p < 0.01, n ≥ 100, ≥ 70% of walk-forward windows positive, ≥ 95th percentile of every random control, positive at +50% cost, bootstrap 5th percentile > 0, not fragile.
 * **Moderate:** p < 0.05, n ≥ 50, ≥ 60% of walk-forward windows positive, ≥ 90th percentile of every control, positive at +25% cost, not fragile.
-* **Weak:** positive OOS expectancy that doesn't meet the Moderate bar.
-* **No evidence:** OOS expectancy ≤ 0, or below the 75th percentile of any control.
+* **Weak:** positive OOS expectancy with ≥ 30 OOS trades that doesn't meet the Moderate bar.
+* **No evidence:** fewer than 30 OOS trades, OOS expectancy ≤ 0, or below the 75th percentile of any control.
